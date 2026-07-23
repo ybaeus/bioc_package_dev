@@ -1,0 +1,14 @@
+citHeader("To cite MyBiocPackage in publications use:")
+
+bibentry(
+    bibtype  = "Article",
+    title    = "MyBiocPackage: a short descriptive title",
+    author   = c(person("Given", "Family")),
+    journal  = "Journal Name",
+    year     = "2026",
+    volume   = "0",
+    number   = "0",
+    pages    = "0-0",
+    doi      = "10.0000/000000",
+    url      = "https://github.com/you/MyBiocPackage"
+)

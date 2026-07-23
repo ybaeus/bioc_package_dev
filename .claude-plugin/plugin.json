@@ -1,0 +1,11 @@
+{
+  "name": "bioconductor-package-dev",
+  "description": "Guidance and review for developing, maintaining, submitting, and reviewing Bioconductor R packages, distilled from the official Bioconductor contributions guide.",
+  "version": "0.1.0",
+  "author": {
+    "name": "ybaeus"
+  },
+  "homepage": "https://github.com/ybaeus/bioc_package_dev",
+  "repository": "https://github.com/ybaeus/bioc_package_dev",
+  "license": "Apache-2.0"
+}
