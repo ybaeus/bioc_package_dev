@@ -24,6 +24,7 @@ bioc_package_dev/
 ├── knowledge/                # single source of truth - portable markdown summaries
 │   ├── index.md              # topic router across all summaries
 │   ├── workflow.md           # end-to-end submission runbook
+│   ├── SOURCES.md            # slug->file map + pinned upstream commit (for refresh)
 │   ├── 01-submissions.md     # ch 1
 │   ├── development/          # ch 2-23 (naming, metadata, docs, data, tests, code, ...)
 │   ├── maintenance.md        # ch 24-30
@@ -34,8 +35,7 @@ bioc_package_dev/
 │   └── check-submission.R    # runs the pre-submission gate checks
 ├── .claude-plugin/           # Claude Code plugin + marketplace manifests
 ├── skills/bioconductor-package-dev/SKILL.md
-├── agents/bioc-package-review.md
-└── context/                  # working docs (session state, plan, TODO)
+└── agents/bioc-package-review.md
 ```
 
 ## Prerequisites
