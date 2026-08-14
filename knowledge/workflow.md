@@ -3,6 +3,40 @@
 The sequential path from local package to first Bioconductor release. The per-chapter files
 under this directory are reference; this file is the process. Follow it top to bottom.
 
+## Converting an existing package (start here if code already exists)
+
+Most submitters are not starting from an empty directory - they have a working package or tool on
+GitHub. Do not scaffold from scratch. Work the list below in order; it is ordered by how expensive
+the problem is to discover late, not by how hard it is to fix.
+
+1. **Eligibility and type** - Phase 0 below. Cheapest to answer and the only one that can end the
+   effort entirely.
+2. **CRAN status** - "Not exist on CRAN. A package can only be submitted to one or the other."
+   Moving from CRAN means leaving CRAN, not dual-listing. Note also that the naming policy says a
+   name should not conflict with "any current or past CRAN package"; a maintainer migrating their
+   own package should raise that in the submission issue rather than assume it is fine.
+3. **Name** - see `development/package-name.md`. Renaming after review has started is painful, and
+   the check is a search, not a build.
+4. **Version** - reset to `0.99.0` no matter what the package is at today. A package at `2.4.1` on
+   GitHub still submits as `0.99.0`. See `maintenance.md`.
+5. **Metadata gaps** - `biocViews` (usually missing entirely on a non-Bioc package), `Authors@R`
+   with a valid `cre` email, `NEWS.md`, `inst/CITATION`. `biocthis::use_bioc_description()` and
+   friends write these; see the tooling block in `AGENTS.md`.
+6. **Reuse audit** - does the package define its own container where `SummarizedExperiment`,
+   `GRanges`, or another core class would do? This is the single most common substantive review
+   request and the most expensive to retrofit. See `development/methods-classes.md` (ch 5).
+7. **Data placement** - anything large moves out of the package to ExperimentHub/AnnotationHub
+   before you measure sizes. See `development/data.md`.
+8. **Documentation** - a real evaluated vignette, not a stub; man pages with runnable examples.
+   Existing packages usually have a README doing the vignette's job. See
+   `development/documentation.md`.
+9. **Code style** - `<-`, 4-space indent, 80 columns, no `1:n`. Mechanical, so do it last; doing it
+   first only creates conflicts with the changes above.
+10. **Run the gate** - Phase 1 below, then Phase 2 onward unchanged.
+
+Steps 1-5 are usually a day. Step 6 is where a conversion either goes smoothly or becomes a
+rewrite, so check it early even though it is fixed late.
+
 ## Phase 0 - Decide it belongs in Bioconductor
 - Package addresses high-throughput genomic / biological data analysis.
 - Reuses standard Bioconductor data structures (e.g. SummarizedExperiment, S4) where possible.
@@ -20,13 +54,14 @@ Hard gate (all required):
 - Valid maintainer email; maintainer == the person who will submit.
 - `R CMD check` clean on current R-devel (no errors, no warnings).
 - `BiocCheck::BiocCheckGitClone()` clean.
-- `BiocCheck::BiocCheck('new-package'=TRUE)` clean (no errors, no warnings).
+- `BiocCheck::BiocCheck('new-package' = TRUE)` clean (no errors, no warnings).
 - Source build < 10 MB (`R CMD build`); `R CMD check --no-build-vignettes` < 10 min.
 - Every individual file <= 5 MB; running vignettes/examples/tests uses < 8 GB memory.
 - Bioc code style in R code: `<-`, 4-space indent, 80-col. See `development/r-code.md`.
 
 Use the current devel Bioconductor with the matching R version - see `appendices.md` (Appendix A)
-and `development/general-dev.md`. Optional helper: `scripts/check-submission.R` runs the checks.
+and `development/general-dev.md`. BiocCheck is the authoritative validator for everything above
+except the two timing items, which need a real build; see the tooling block in `AGENTS.md`.
 
 ## Phase 2 - Host on GitHub
 - Push the package to the DEFAULT branch of a public GitHub repository (not a subdirectory,
@@ -78,4 +113,4 @@ Once accepted (detail: `maintenance.md`, ch 24):
 Source: https://contributions.bioconductor.org/bioconductor-package-submissions.html,
 https://contributions.bioconductor.org/git-version-control.html,
 https://contributions.bioconductor.org/versionnum.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).

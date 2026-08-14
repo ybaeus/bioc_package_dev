@@ -25,7 +25,7 @@ not say "Bioconductor" explicitly but the package clearly targets it.
 ## Pre-submission gate (hard requirements for a new package)
 Do not tell a user their package is submission-ready unless all hold:
 - `R CMD check` clean on current R-devel (no errors, no warnings).
-- `BiocCheck::BiocCheckGitClone()` and `BiocCheck::BiocCheck('new-package'=TRUE)` clean.
+- `BiocCheck::BiocCheckGitClone()` and `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
 - Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; individual files <= 5 MB;
   < 8 GB memory for vignettes/examples/tests.
 - `Version: 0.99.0`; `biocViews` present; a vignette and man pages present; valid maintainer
@@ -49,10 +49,25 @@ acceptance, register an SSH key at BiocCredentials, add `upstream = git.biocondu
 push to both remotes; only `devel` and `RELEASE_x_y` branches accept pushes. Full sequence:
 `knowledge/workflow.md`.
 
-## Optional helpers
-- `scripts/check-submission.R` runs `R CMD check` + `BiocCheck` and reports pass/fail vs the gate
-  (needs R + BiocCheck installed).
-- `templates/` holds lean skeletons (DESCRIPTION, NEWS.md, .Rbuildignore, .gitignore,
-  inst/CITATION). For full scaffolding, prefer the `biocthis` package.
+## Tooling (use these, do not reimplement them)
+This repo ships no validator and no templates on purpose - Bioconductor already maintains both,
+and reusing existing infrastructure is itself a review criterion (ch 5).
+
+```r
+# Validation - BiocCheck is authoritative
+BiocCheck::BiocCheckGitClone()
+BiocCheck::BiocCheck('new-package' = TRUE)
+
+# Scaffolding - biocthis writes Bioconductor-shaped files
+biocthis::use_bioc_description(biocViews = "Software")
+biocthis::use_bioc_news_md()
+biocthis::use_bioc_vignette(name = "<pkg>", title = "Introduction to <pkg>")
+biocthis::use_bioc_citation()
+biocthis::use_bioc_github_action()
+```
+
+Install with `BiocManager::install(c("BiocCheck", "biocthis"))`. BiocCheck cannot measure the two
+timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB memory) - those
+need a real build.
 
 Canonical guide: https://contributions.bioconductor.org (source: github.com/Bioconductor/pkgrevdocs).

@@ -1,11 +1,12 @@
 ---
 name: bioc-package-review
 description: >-
-  Audit an R package for Bioconductor submission readiness. Use when the user asks to review,
-  audit, or check whether their package is ready to submit to Bioconductor, or to run a
-  pre-submission check. Walks the package against the official pre-submission gate and the
-  contribution guidelines, then returns a structured blockers/warnings/suggestions report mapped
-  to specific guide chapters.
+  Audits a package against Bioconductor's submission requirements and reports what would block
+  acceptance, before a reviewer sees it. Use when the user asks to review, audit, or check whether
+  their package is ready to submit, asks what a reviewer would flag, or wants a pre-submission
+  check. Walks the package against the official pre-submission gate and the contribution
+  guidelines, then returns a structured blockers/warnings/suggestions report mapped to specific
+  guide chapters and ending in a verdict. Read-only: it renders a verdict, it does not fix.
 model: fable
 tools: Read, Grep, Glob, Bash
 ---
@@ -48,15 +49,38 @@ rather than reinventing them.
 ## The gate (report each as pass/fail)
 - `R CMD check` clean on R-devel (no errors, no warnings).
 - `BiocCheck::BiocCheckGitClone()` clean.
-- `BiocCheck::BiocCheck('new-package'=TRUE)` clean.
+- `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
 - Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; files <= 5 MB; < 8 GB memory.
 - `Version: 0.99.0`; `biocViews`, vignette, man pages present; valid maintainer; not on CRAN;
   hosted on GitHub default branch.
 
-If R and BiocCheck are installed, you may run `${CLAUDE_PLUGIN_ROOT}/scripts/check-submission.R`
-(or `R CMD check` + `BiocCheck::BiocCheck()` directly) from the package root and parse the output.
-If R is unavailable, say so and audit statically from the files, marking the check items as
-"not run - R unavailable".
+## Tooling (use these, do not reimplement them)
+This repo ships no validator and no templates on purpose - Bioconductor already maintains both,
+and reusing existing infrastructure is itself a review criterion (ch 5).
+
+```r
+# Validation - BiocCheck is authoritative
+BiocCheck::BiocCheckGitClone()
+BiocCheck::BiocCheck('new-package' = TRUE)
+
+# Scaffolding - biocthis writes Bioconductor-shaped files
+biocthis::use_bioc_description(biocViews = "Software")
+biocthis::use_bioc_news_md()
+biocthis::use_bioc_vignette(name = "<pkg>", title = "Introduction to <pkg>")
+biocthis::use_bioc_citation()
+biocthis::use_bioc_github_action()
+```
+
+Install with `BiocManager::install(c("BiocCheck", "biocthis"))`. BiocCheck cannot measure the two
+timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB memory) - those
+need a real build.
+
+Run the two BiocCheck calls via Bash from the package root when BiocCheck is installed, and parse
+the output into your findings. When BiocCheck is unavailable, mark those gate items "not run -
+BiocCheck unavailable" and audit statically from the files instead. Report the two timing items as
+"requires a build" rather than claiming a verdict on them; do not run `R CMD check` yourself unless
+the user asks, since a full check can take many minutes. Never guess a gate result you did not
+measure.
 
 ## Report format
 Return a structured report, most severe first:
