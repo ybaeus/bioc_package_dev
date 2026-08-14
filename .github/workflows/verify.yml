@@ -94,8 +94,9 @@ jobs:
 
   golden-path:
     name: golden path
-    # TEMPORARY: allowing push so this job runs once. It has never executed anywhere. Reverting
-    # to `github.event_name != 'push'` immediately after.
+    # Not on push: a Bioconductor devel install plus build, check and BiocCheck costs several
+    # minutes. Pull requests and the weekly cron are enough.
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

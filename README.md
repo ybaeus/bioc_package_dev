@@ -142,6 +142,14 @@ firing while every file still looks fine. Four layers catch different failures.
 The fidelity job is a weekly cron rather than a PR gate: upstream changing is a reason to open an
 issue, not to block someone's pull request.
 
+The golden path earns its keep. On its first real run it found five ways the documented
+instructions failed: `use_bioc_vignette()` needs BiocStyle and friends actually installed, not
+just declared; `use_bioc_description()` silently declines to touch an existing DESCRIPTION;
+`use_bioc_citation()` writes an `inst/CITATION` with an empty title and author that makes
+`R CMD build` fail; and `biocViews = "Software"` on its own is a BiocCheck error. Every one of
+those would have been hit by a user following this repo's advice, and none of them is visible by
+reading the files. It now passes end to end against Bioconductor devel.
+
 ## Built on
 
 This repo is a thin layer over other people's work. It contributes routing, summarization, and
