@@ -123,16 +123,24 @@ jobs:
         run: |
           Rscript -e 'BiocManager::install(c("biocthis", "BiocCheck", "roxygen2"), ask = FALSE)'
 
+      # Built outside the checkout: usethis::create_package() refuses to create a project nested
+      # inside an existing one, and the workspace is this repository.
       - name: Run the documented scaffolding chain
-        run: Rscript scripts/golden-path.R "${{ github.workspace }}/GoldenPathPkg"
+        shell: bash
+        run: |
+          if ! Rscript scripts/golden-path.R "${{ runner.temp }}/GoldenPathPkg" 2>&1 \
+              | tee golden-path.log; then
+            echo "::error::golden-path failed: $(tail -c 900 golden-path.log | tr '\n' ' ')"
+            exit 1
+          fi
 
       - uses: grimbough/bioc-actions/build-install-check@v1.0.16
         with:
-          package-directory: GoldenPathPkg
+          package-directory: ${{ runner.temp }}/GoldenPathPkg
 
       - uses: grimbough/bioc-actions/run-BiocCheck@v1.0.16
         with:
-          package-directory: GoldenPathPkg
+          package-directory: ${{ runner.temp }}/GoldenPathPkg
           # Start at error. Tighten to warning once the baseline is known green - a scaffolded
           # package legitimately trips some BiocCheck notes (no real vignette content yet).
           error-on: error
