@@ -72,7 +72,7 @@ BiocCheck::BiocCheckGitClone()
 BiocCheck::BiocCheck('new-package' = TRUE)
 
 # Scaffolding - biocthis writes Bioconductor-shaped files
-biocthis::use_bioc_description(biocViews = "Software")
+biocthis::use_bioc_description(biocViews = "Software, <two or more specific terms>")
 biocthis::use_bioc_news_md()
 biocthis::use_bioc_vignette(name = "<pkg>", title = "Introduction to <pkg>")
 biocthis::use_bioc_citation()
@@ -85,6 +85,15 @@ replacing an existing file - and in a non-interactive session it declines silent
 package that already has a DESCRIPTION, this call very often does nothing at all and you get no
 error. Add `biocViews` by hand instead, or approve the overwrite knowing it discards the
 DESCRIPTION you have. Everything else in the chain appends and is safe on an existing package.
+
+`biocViews = "Software"` on its own is a BiocCheck **ERROR**: "Add biocViews other than Software".
+The top-level terms (Software, AnnotationData, ExperimentData, Workflow) do not count on their
+own - pick specific terms from the vocabulary at
+https://bioconductor.org/packages/release/BiocViews.html, e.g.
+`"Software, GeneExpression, Transcriptomics"`. Two other things BiocCheck flags on a freshly
+scaffolded package: the placeholder Description is "too concise" (it wants at least three
+sentences), and a Software package with no Bioconductor dependencies gets a warning suggesting
+CRAN instead.
 
 `use_bioc_citation()` leaves `inst/CITATION` unfinished, and unfinished here means broken. The
 template substitutes `{{Title}}` and `{{github_owner}}`; the function passes neither a `Title`

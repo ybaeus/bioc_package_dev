@@ -127,7 +127,8 @@ jobs:
         run: |
           Rscript -e 'BiocManager::install(c(
             "biocthis", "BiocCheck", "roxygen2",
-            "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat"
+            "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat",
+            "SummarizedExperiment"
           ), ask = FALSE)'
 
       # Built outside the checkout: usethis::create_package() refuses to create a project nested

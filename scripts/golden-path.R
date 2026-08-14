@@ -31,7 +31,8 @@ pkg <- basename(outdir)
 ## with a clear message beats finding it out mid-chain.
 deps <- c(
     "usethis", "biocthis", "roxygen2",
-    "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat"
+    "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat",
+    "SummarizedExperiment"
 )
 for (dep in deps) {
     if (!requireNamespace(dep, quietly = TRUE)) {
@@ -57,23 +58,28 @@ usethis::proj_set(outdir, force = TRUE)
 dir.create(file.path(outdir, "R"), showWarnings = FALSE)
 writeLines(
     c(
-        "#' Count non-missing values per column",
+        "#' Count observed values per sample",
         "#'",
-        "#' @param x A `data.frame` or matrix.",
+        "#' @param se A [SummarizedExperiment::SummarizedExperiment].",
+        "#' @param assay_name Name or index of the assay to count.",
         "#'",
-        "#' @return An integer vector, one element per column of `x`.",
+        "#' @return An integer vector with one element per column of `se`.",
         "#'",
         "#' @examples",
-        "#' countObserved(data.frame(a = c(1, NA), b = c(2, 3)))",
+        "#' library(SummarizedExperiment)",
+        "#' counts <- matrix(c(1, NA, 3, 4), nrow = 2)",
+        "#' se <- SummarizedExperiment(assays = list(counts = counts))",
+        "#' countObserved(se)",
         "#'",
+        "#' @importFrom SummarizedExperiment assay",
         "#' @export",
-        "countObserved <- function(x) {",
-        "    stopifnot(length(dim(x)) == 2L)",
-        "    counts <- integer(ncol(x))",
+        "countObserved <- function(se, assay_name = 1L) {",
+        "    mat <- SummarizedExperiment::assay(se, assay_name)",
+        "    counts <- integer(ncol(mat))",
         "    for (i in seq_along(counts)) {",
-        "        counts[[i]] <- sum(!is.na(x[, i]))",
+        "        counts[[i]] <- sum(!is.na(mat[, i]))",
         "    }",
-        "    names(counts) <- colnames(x)",
+        "    names(counts) <- colnames(mat)",
         "    counts",
         "}"
     ),
@@ -95,12 +101,15 @@ writeLines(
 )
 writeLines(
     c(
-        'test_that("countObserved counts non-missing values per column", {',
-        '    x <- data.frame(a = c(1, NA, 3), b = c(1, 2, 3))',
-        '    expect_identical(countObserved(x), c(a = 2L, b = 3L))',
+        'test_that("countObserved counts non-missing values per sample", {',
+        '    counts <- matrix(c(1, NA, 3, 4), nrow = 2)',
+        '    se <- SummarizedExperiment::SummarizedExperiment(',
+        '        assays = list(counts = counts)',
+        '    )',
+        '    expect_identical(countObserved(se), c(1L, 2L))',
         '})',
         '',
-        'test_that("countObserved rejects objects without two dimensions", {',
+        'test_that("countObserved rejects a non-SummarizedExperiment", {',
         '    expect_error(countObserved(1:3))',
         '})'
     ),
@@ -121,7 +130,7 @@ writeLines(
 unlink(desc_path <- file.path(outdir, "DESCRIPTION"))
 
 say("biocthis::use_bioc_description()")
-biocthis::use_bioc_description(biocViews = "Software")
+biocthis::use_bioc_description(biocViews = "Software, GeneExpression, Transcriptomics")
 
 say("biocthis::use_bioc_news_md()")
 biocthis::use_bioc_news_md(open = FALSE)
@@ -138,6 +147,29 @@ biocthis::use_bioc_github_action()
 ## ---------------------------------------------------------------------------------------
 ## The two things the guide requires that biocthis does not decide for you.
 ## ---------------------------------------------------------------------------------------
+
+## BiocCheck warns that a scaffolded Description is "too concise" and that a Software package
+## with no Bioconductor dependencies should consider CRAN. Both are real submission feedback, so
+## the fixture answers them rather than suppressing them: a Description of several sentences, and
+## a genuine SummarizedExperiment dependency - which is also the reuse rule this repo teaches.
+say("writing a Description of substance and declaring the Bioconductor dependency")
+desc <- readLines(desc_path)
+desc <- desc[!grepl("^(Title|Description|Imports):", desc)]
+desc <- c(
+    desc,
+    paste(
+        "Title: Count Observed Values Per Sample In A SummarizedExperiment"
+    ),
+    paste(
+        "Description: Counts the non-missing values in each column of an assay stored in a",
+        "SummarizedExperiment object. The result is one integer per sample, which is a common",
+        "first step when assessing coverage or sparsity across an experiment. This package",
+        "exists to exercise the scaffolding chain documented in AGENTS.md and is not intended",
+        "for analysis."
+    ),
+    "Imports: SummarizedExperiment"
+)
+writeLines(desc, desc_path)
 
 say("confirming Version: 0.99.0")
 desc <- readLines(desc_path)
