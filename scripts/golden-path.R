@@ -117,6 +117,24 @@ desc <- readLines(desc_path)
 desc[grepl("^Version:", desc)] <- "Version: 0.99.0"
 writeLines(desc, desc_path)
 
+## biocthis 1.23.0 ships inst/CITATION with an empty title: the template substitutes {{Title}}
+## but use_bioc_citation() never passes one. citation() errors on an empty title, the generated
+## vignette calls citation(), and so R CMD build fails at "creating vignettes". A real user has
+## to fill this file in anyway - the DOI in it is the literal string 10.1101/TODO - so doing the
+## minimum here is modelling the user, not papering over the bug.
+say("filling in the CITATION title that use_bioc_citation() leaves empty")
+cit_path <- file.path(outdir, "inst", "CITATION")
+cit <- readLines(cit_path)
+if (!any(grepl('title = ""', cit, fixed = TRUE))) {
+    warning(
+        "inst/CITATION no longer has an empty title - biocthis may have fixed this. ",
+        "Re-check before keeping this workaround.",
+        call. = FALSE
+    )
+}
+cit <- sub('title = ""', paste0('title = "', pkg, ': a golden-path fixture"'), cit, fixed = TRUE)
+writeLines(cit, cit_path)
+
 say("roxygenise (man pages for exported objects)")
 roxygen2::roxygenise(outdir, load_code = roxygen2::load_source)
 

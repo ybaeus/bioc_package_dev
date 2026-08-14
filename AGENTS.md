@@ -86,6 +86,13 @@ package that already has a DESCRIPTION, this call very often does nothing at all
 error. Add `biocViews` by hand instead, or approve the overwrite knowing it discards the
 DESCRIPTION you have. Everything else in the chain appends and is safe on an existing package.
 
+`use_bioc_citation()` leaves `inst/CITATION` unfinished, and unfinished here means broken. Its
+template substitutes `{{Title}}`, but the function never passes a `Title`, so the file lands with
+an empty title. `utils::citation()` then errors ("a bibentry of bibtype 'Manual' has to specify
+the field: title"), and because the generated vignette calls `citation()`, `R CMD build` fails at
+"creating vignettes". Verified against biocthis 1.23.0 on 2026-08-14. Fill in the title, the
+author, and the placeholder `10.1101/TODO` DOI immediately after running it.
+
 Install with:
 
 ```r
