@@ -48,7 +48,10 @@ for any change to propagate; broken packages are not published to users.
 ## Chapter 25 - Version Numbering
 
 Format is `x.y.z`:
-- New (unaccepted) packages start at `0.99.0` in DESCRIPTION.
+- New (unaccepted) packages start at `0.99.0` in DESCRIPTION. Upstream: "New packages submitted
+  to Bioconductor should set Version: 0.99.0 in the DESCRIPTION file." Stated as a "should", but
+  it is what reviewers and the build system expect - set it, and treat a wrong version as a
+  warning rather than as a reason someone cannot submit.
 - `y` (middle): must be ODD in devel, EVEN in release. Maximum value is 99.
 - `z` (patch): increment by 1 for EACH git commit in the devel branch.
 - `x` (major): only ever changed by the Bioconductor team.
@@ -184,4 +187,4 @@ git remote prune origin             # execute
 ```
 
 Source: https://contributions.bioconductor.org/git-version-control.html and https://contributions.bioconductor.org/versionnum.html and https://contributions.bioconductor.org/troubleshooting-build-report.html and https://contributions.bioconductor.org/debugging-cc-code.html and https://contributions.bioconductor.org/deprecation.html and https://contributions.bioconductor.org/package-end-of-life-policy.html and https://contributions.bioconductor.org/branch-rename-faqs.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).

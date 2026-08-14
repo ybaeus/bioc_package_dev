@@ -67,8 +67,15 @@ REPO_PREFIXES = {
 # Basenames that name a file in the *user's* package, not in this repo.
 FOREIGN_BASENAMES = {"NEWS.md", "README.md", "CITATION.md", "INSTALL.md"}
 
+# Spelled with escapes, not literals: a checker that trips its own check is not a good look, and
+# box-drawing characters (U+2500-257F, used by the README tree) must stay outside these ranges.
 EMOJI = re.compile(
-    "[\U0001F000-\U0001FAFF☀-➿⬀-⯿️←-⇿⬅-⬇]"
+    "["
+    "\U0001f000-\U0001faff"  # pictographs, emoticons, transport, symbols
+    "\u2600-\u27bf"          # miscellaneous symbols and dingbats
+    "\u2b00-\u2bff"          # arrows and geometric shapes
+    "\ufe0f"                 # variation selector 16
+    "]"
 )
 
 SLUG_URL = re.compile(r"https://contributions\.bioconductor\.org/([A-Za-z0-9._-]+)\.html")

@@ -21,7 +21,7 @@ package development features.
 - Source package produced by `R CMD build`: **< 10 MB**. Upstream: "should occupy less than
   10 MB on disk".
 - `R CMD check --no-build-vignettes` runtime: **< 10 minutes**. Upstream: "should require less
-  than 10 minutes".
+  than 10 minutes to run R CMD check --no-build-vignettes".
 - Memory across vignettes, examples, and tests: **< 8 GB**. Upstream: "it is recommended that
   the vignettes, man page examples, and unit tests do not require more than 8 GB of memory".
 - Use lossy compression (e.g., pngquant) to shrink large images/screenshots.

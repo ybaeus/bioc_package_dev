@@ -41,11 +41,11 @@ this is a good thing to raise in the submission issue rather than discover durin
 
 - Host the package in a GitHub repository.
 - The package must live on the repository's DEFAULT branch - you cannot specify an
-  alternative branch - and that branch "must contain only package code". Files or
-  directories for other applications (GitHub Actions, devtools, etc) "should be in
-  a different branch". Upstream states the first as a requirement and the second as
-  a recommendation; do not report a package as non-compliant solely for carrying a
-  CI workflow on the default branch.
+  alternative branch. Upstream: "The default branch must contain only package code.
+  Any files or directories for other applications (Github Actions, devtools, etc)
+  should be in a different branch." Note the two different strengths in those two
+  sentences: do not report a package as non-compliant solely for carrying a CI
+  workflow on the default branch.
 - Package name should not conflict (case-insensitive) with any current or past
   Bioconductor or CRAN package. The contributor grants Bioconductor rights to
   the package name (CRAN-style naming/ownership policy applies).
