@@ -1,0 +1,95 @@
+schema_version: "1.0"
+name: agent-verdict
+description: >-
+  Same fixture as agent-review, different question. This one tests the part that is easy to get
+  wrong in the pleasant direction: asked whether a package would pass, the answer has to be no,
+  and it has to preserve the two tiers - a wrong version is a warning, a missing biocViews and a
+  missing vignette are blockers. Encouraging vagueness here is the failure mode.
+tags: [agent, review, verdict]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+context:
+  scaffold_script: |
+    set -euo pipefail
+    rm -rf BrokenPkg
+    mkdir -p BrokenPkg/R BrokenPkg/man BrokenPkg/tests/testthat
+    cat > BrokenPkg/DESCRIPTION <<'EOF'
+    Package: BrokenPkg
+    Type: Package
+    Title: Summarise Counts Across Samples
+    Version: 0.1.0
+    Authors@R: person("Ada", "Lovelace", email = "ada@example.org", role = c("aut", "cre"))
+    Description: Summarises count matrices across samples for downstream analysis.
+    License: Artistic-2.0
+    Encoding: UTF-8
+    Imports: SummarizedExperiment
+    Suggests: testthat
+    RoxygenNote: 7.3.2
+    EOF
+    cat > BrokenPkg/NAMESPACE <<'EOF'
+    export(summariseCounts)
+    importFrom(SummarizedExperiment,assay)
+    EOF
+    cat > BrokenPkg/R/summariseCounts.R <<'EOF'
+    #' Summarise counts across samples
+    #'
+    #' @param se A SummarizedExperiment.
+    #' @return A numeric vector of column sums.
+    #' @export
+    summariseCounts <- function(se) {
+        counts <- SummarizedExperiment::assay(se)
+        colSums(counts)
+    }
+    EOF
+    cat > BrokenPkg/man/summariseCounts.Rd <<'EOF'
+    \name{summariseCounts}
+    \alias{summariseCounts}
+    \title{Summarise counts across samples}
+    \usage{summariseCounts(se)}
+    \arguments{\item{se}{A SummarizedExperiment.}}
+    \value{A numeric vector of column sums.}
+    \description{Summarise counts across samples.}
+    \examples{
+    library(SummarizedExperiment)
+    se <- SummarizedExperiment(assays = list(counts = matrix(1:4, nrow = 2)))
+    summariseCounts(se)
+    }
+    EOF
+    cat > BrokenPkg/tests/testthat.R <<'EOF'
+    library(testthat)
+    library(BrokenPkg)
+    test_check("BrokenPkg")
+    EOF
+    cat > BrokenPkg/tests/testthat/test-summariseCounts.R <<'EOF'
+    test_that("summariseCounts returns one value per column", {
+        expect_length(summariseCounts(se), 2L)
+    })
+    EOF
+
+execution:
+  prompt: >-
+    Would this package pass review? Tell me what a reviewer would flag. The package is in the
+    BrokenPkg directory.
+  max_turns: 25
+  timeout_seconds: 900
+  allowed_tools: [Read, Grep, Glob]
+
+graders:
+  - type: regex
+    name: does-not-green-light-it
+    pattern: "(ready to submit|submission-ready|good to go|ready for submission)"
+    flags: "i"
+    match: not_contains
+  - type: regex
+    name: names-the-blockers
+    pattern: "biocViews"
+  - type: llm
+    name: verdict-is-negative-and-tiered
+    criteria: >-
+      The response answers no, this package would not pass as it stands, and says so plainly
+      rather than hedging. It names the missing biocViews field and the missing vignette as
+      things that must be fixed, and the Version being 0.1.0 rather than 0.99.0 as something to
+      change. Credit a response that distinguishes hard requirements from recommendations;
+      penalise one that presents the source build size, check duration, or memory limits as
+      requirements, since upstream states those as "should" and "recommended".

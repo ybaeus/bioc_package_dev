@@ -1,0 +1,223 @@
+name: verify
+
+# Four jobs, deliberately on four different triggers. The static checks are cheap enough to gate
+# every push. The golden path costs a Bioconductor install, so it runs on pull requests and on a
+# schedule. The fidelity job never gates a pull request: upstream changing is a reason to open an
+# issue, not a reason to block somebody's work. Evals cost tokens and run only when asked.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  schedule:
+    # Mondays, 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      run-evals:
+        description: "Also run the behavioral evals (costs tokens)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # verify.py compares each knowledge file's Fetched stamp against the date of the commit
+          # that last touched it, which a shallow clone cannot answer.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/verify.py
+
+  fidelity:
+    name: upstream fidelity
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check against upstream
+        id: check
+        continue-on-error: true
+        # `shell: bash` brings -o pipefail, without which tee would mask the failing exit status.
+        shell: bash
+        run: python3 scripts/verify.py --network --json | tee fidelity.json
+
+      - name: Open or update the drift issue
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="Upstream drift detected by the fidelity job"
+          body=$(mktemp)
+          {
+            echo "\`scripts/verify.py --network\` failed on $(date -u +%Y-%m-%d)."
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "Work these top-down - the ordering in \`docs/REFRESH.md\` is by blast radius:"
+            echo
+            echo '```'
+            python3 -c "import json;d=json.load(open('fidelity.json'));[print('-',f) for f in d['failures']];[print('- warn:',w) for w in d['warnings']]"
+            echo '```'
+          } > "$body"
+
+          existing=$(gh issue list --state open --label upstream-drift --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$body"
+          else
+            gh label create upstream-drift --color FBCA04 --description "Tracked upstream moved" \
+              --force >/dev/null 2>&1 || true
+            gh issue create --title "$title" --label upstream-drift --body-file "$body"
+          fi
+
+      - name: Fail the job if upstream drifted
+        if: steps.check.outcome == 'failure'
+        run: exit 1
+
+  golden-path:
+    name: golden path
+    # Not on push: a Bioconductor devel install plus build, check and BiocCheck costs several
+    # minutes. Pull requests and the weekly cron are enough.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: grimbough/bioc-actions/setup-bioc@v1.0.16
+        with:
+          bioc-version: devel
+
+      # setup-bioc does not install pandoc, and the biocthis vignette template is R Markdown, so
+      # R CMD build fails at "creating vignettes" without this.
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      # Deliberately NOT using grimbough/bioc-actions/use-bioc-caches. It pins actions/cache@v2,
+      # which GitHub now auto-fails, so the whole job dies in "Set up job" before running a step.
+      # Still broken on the action's main branch as of 2026-08-14, so a tag bump will not fix it.
+      # No loss here: that action caches BiocFileCache/ExperimentHub/AnnotationHub/biomaRt data,
+      # and the golden-path package downloads none of it. What is worth caching is the R library.
+      - name: Resolve the R library path
+        id: rlib
+        run: echo "path=$(Rscript -e 'cat(.libPaths()[1])')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.rlib.outputs.path }}
+          key: bioc-devel-${{ runner.os }}-${{ hashFiles('.github/workflows/verify.yml') }}
+          restore-keys: bioc-devel-${{ runner.os }}-
+
+      - name: Install the tools this repo recommends
+        run: |
+          Rscript -e 'BiocManager::install(c(
+            "biocthis", "BiocCheck", "roxygen2",
+            "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat",
+            "SummarizedExperiment"
+          ), ask = FALSE)'
+
+      # Built outside the checkout: usethis::create_package() refuses to create a project nested
+      # inside an existing one, and the workspace is this repository.
+      - name: Run the documented scaffolding chain
+        shell: bash
+        run: |
+          if ! Rscript scripts/golden-path.R "${{ runner.temp }}/GoldenPathPkg" 2>&1 \
+              | tee golden-path.log; then
+            echo "::error::golden-path failed: $(tail -c 900 golden-path.log | tr '\n' ' ')"
+            exit 1
+          fi
+
+      # Built here rather than only inside the action so the diagnostic reaches the job
+      # annotation instead of being buried in a log that needs a token to read.
+      - name: Build the scaffolded package
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          if ! R CMD build GoldenPathPkg > build.log 2>&1; then
+            echo "::error::R CMD build failed: $(tail -c 1800 build.log | tr '\n' ' ')"
+            exit 1
+          fi
+
+      - uses: grimbough/bioc-actions/build-install-check@v1.0.16
+        with:
+          package-directory: ${{ runner.temp }}/GoldenPathPkg
+
+      - uses: grimbough/bioc-actions/run-BiocCheck@v1.0.16
+        with:
+          package-directory: ${{ runner.temp }}/GoldenPathPkg
+          error-on: error
+          # --no-check-bioc-help skips the support-site registration and bioc-devel subscription
+          # checks. Those are ERRORs and they can never pass for a throwaway fixture: they test
+          # whether the maintainer email is registered with Bioconductor, and this package's
+          # maintainer is a usethis placeholder. Nothing else is disabled - the point is to find
+          # out whether the documented chain produces an acceptable package, so weakening the
+          # checks any further would defeat the exercise.
+          arguments: --no-check-bioc-help
+
+      # BiocCheck exits with a bare status code, so without this a red build says only "exit
+      # code 2" and reading the reason needs a token.
+      - name: Surface the BiocCheck log on failure
+        if: failure()
+        shell: bash
+        run: |
+          found=$(find "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -name '*.BiocCheck' -o -name '00BiocCheck.log' 2>/dev/null | tr '\n' ' ')
+          echo "::error::BiocCheck artifacts: ${found:-none}"
+          log=$(find "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -name '00BiocCheck.log' 2>/dev/null | head -1)
+          if [ -n "$log" ]; then
+            echo "::error::BiocCheck head: $(head -c 2200 "$log" | tr '\n' ' ')"
+            echo "::error::BiocCheck error lines: $(grep -in -A3 'error' "$log" | head -c 1800 | tr '\n' ' ')"
+          fi
+
+  evals:
+    name: behavioral evals
+    if: github.event_name == 'workflow_dispatch' && inputs.run-evals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require an API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "ANTHROPIC_API_KEY is not set - add it as a repository secret." >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate the plugin manifests
+        run: claude plugin validate .
+
+      - name: Run the eval suite
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # --scaffold runs each case's scaffold_script, which builds the broken fixture package
+        # the two agent cases audit. The cases in this repository were authored here.
+        run: claude plugin eval . --ablation with-without --scaffold --report eval-report.html
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: eval-report.html

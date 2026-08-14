@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: trigger-conversion
+description: >-
+  The main case this plugin exists for: someone with a working package on GitHub who wants it in
+  Bioconductor. If the skill description stops covering conversion vocabulary the plugin goes
+  inert here while every static check still passes green, so this is the highest-value case in
+  the suite.
+tags: [trigger, conversion]
+plugins: [bioconductor-package-dev]
+runs: 3
+
+execution:
+  prompt: "I have an R package on GitHub, what do I need to do to submit it to Bioconductor?"
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: names-the-starting-version
+    pattern: "0\\.99\\.0"
+  - type: regex
+    name: names-the-tracker
+    pattern: "Contributions"
+  - type: regex
+    name: names-the-validator
+    pattern: "BiocCheck"

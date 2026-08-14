@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: trigger-implicit
+description: >-
+  The word "Bioconductor" never appears in the prompt, but biocViews is a Bioconductor-only
+  field. AGENTS.md and the skill description both claim to fire when the package clearly targets
+  Bioconductor without the user saying so; this is what tests that claim.
+tags: [trigger, implicit]
+plugins: [bioconductor-package-dev]
+runs: 3
+
+execution:
+  prompt: "My DESCRIPTION has no biocViews - what do I put there?"
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: names-a-real-biocviews-term
+    pattern: "(Software|ExperimentData|AnnotationData|Workflow)"
+  - type: regex
+    name: keeps-the-field-name
+    pattern: "biocViews"

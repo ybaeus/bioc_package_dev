@@ -1,0 +1,37 @@
+schema_version: "1.0"
+name: anti-trigger
+description: >-
+  A plain CRAN question with no Bioconductor content. A skill that fires on everything is as
+  broken as one that fires on nothing - it burns context and drags Bioconductor rules into
+  answers where they do not apply. Three runs because false positives are intermittent.
+tags: [trigger, negative]
+plugins: [bioconductor-package-dev]
+runs: 3
+
+execution:
+  prompt: >-
+    I am writing a tidyverse-style R package for CRAN. How do I set up testthat and get my first
+    test running?
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  # Deliberately not a ban on the word "Bioconductor". A local smoke test showed the correct
+  # behaviour is to say "not Bioconductor, skipping that guidance" and then answer the CRAN
+  # question - which a blanket ban would have scored as a failure. What must not appear is
+  # substantive Bioconductor guidance.
+  - type: regex
+    name: does-not-impose-the-submission-version
+    pattern: "0\\.99\\.0"
+    match: not_contains
+  - type: regex
+    name: does-not-drag-in-bioc-metadata
+    pattern: "(biocViews|BiocCheck|BiocManager)"
+    match: not_contains
+  - type: regex
+    name: does-not-mention-the-tracker
+    pattern: "Contributions"
+    match: not_contains
+  - type: regex
+    name: actually-answers-the-question
+    pattern: "testthat"

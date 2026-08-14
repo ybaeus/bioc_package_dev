@@ -1,0 +1,11 @@
+# Working docs - local only, not shipped
+context/
+
+# OS
+.DS_Store
+Thumbs.db
+evals/results/
+
+# Python
+__pycache__/
+*.pyc

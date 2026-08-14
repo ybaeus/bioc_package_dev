@@ -1,0 +1,22 @@
+schema_version: "1.0"
+name: router-large-data
+description: >-
+  Tests the router rather than a single fact: 300 MB is far past the size limits, so the answer
+  has to leave the package and land on ExperimentHub or AnnotationHub. Answering "compress it"
+  would be confidently useless.
+tags: [router, facts]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+execution:
+  prompt: "I have 300 MB of reference data, where does it go?"
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: routes-to-a-hub
+    pattern: "(ExperimentHub|AnnotationHub)"
+  - type: regex
+    name: mentions-the-size-limit
+    pattern: "(5 ?MB|10 ?MB)"

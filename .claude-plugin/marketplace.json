@@ -1,0 +1,15 @@
+{
+  "name": "bioc-package-dev",
+  "description": "Tooling for developing, maintaining, submitting, and reviewing Bioconductor R packages.",
+  "owner": {
+    "name": "ybaeus",
+    "url": "https://github.com/ybaeus/bioc_package_dev"
+  },
+  "plugins": [
+    {
+      "name": "bioconductor-package-dev",
+      "source": "./",
+      "description": "Guidance and review for developing, maintaining, submitting, and reviewing Bioconductor R packages."
+    }
+  ]
+}

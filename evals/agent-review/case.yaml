@@ -1,0 +1,98 @@
+schema_version: "1.0"
+name: agent-review
+description: >-
+  Audits a package with exactly three planted defects: Version 0.1.0 instead of 0.99.0, no
+  biocViews field, and no vignette. Everything else is deliberately fine, so a report that finds
+  the three and does not invent a fourth is the pass condition. The fixture is built with shell
+  only - no R, no biocthis - so this case runs anywhere and cannot fail for an unrelated reason.
+tags: [agent, review]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+context:
+  scaffold_script: |
+    set -euo pipefail
+    rm -rf BrokenPkg
+    mkdir -p BrokenPkg/R BrokenPkg/man BrokenPkg/tests/testthat
+    cat > BrokenPkg/DESCRIPTION <<'EOF'
+    Package: BrokenPkg
+    Type: Package
+    Title: Summarise Counts Across Samples
+    Version: 0.1.0
+    Authors@R: person("Ada", "Lovelace", email = "ada@example.org", role = c("aut", "cre"))
+    Description: Summarises count matrices across samples for downstream analysis.
+    License: Artistic-2.0
+    Encoding: UTF-8
+    Imports: SummarizedExperiment
+    Suggests: testthat
+    RoxygenNote: 7.3.2
+    EOF
+    cat > BrokenPkg/NAMESPACE <<'EOF'
+    export(summariseCounts)
+    importFrom(SummarizedExperiment,assay)
+    EOF
+    cat > BrokenPkg/R/summariseCounts.R <<'EOF'
+    #' Summarise counts across samples
+    #'
+    #' @param se A SummarizedExperiment.
+    #' @return A numeric vector of column sums.
+    #' @export
+    summariseCounts <- function(se) {
+        counts <- SummarizedExperiment::assay(se)
+        colSums(counts)
+    }
+    EOF
+    cat > BrokenPkg/man/summariseCounts.Rd <<'EOF'
+    \name{summariseCounts}
+    \alias{summariseCounts}
+    \title{Summarise counts across samples}
+    \usage{summariseCounts(se)}
+    \arguments{\item{se}{A SummarizedExperiment.}}
+    \value{A numeric vector of column sums.}
+    \description{Summarise counts across samples.}
+    \examples{
+    library(SummarizedExperiment)
+    se <- SummarizedExperiment(assays = list(counts = matrix(1:4, nrow = 2)))
+    summariseCounts(se)
+    }
+    EOF
+    cat > BrokenPkg/tests/testthat.R <<'EOF'
+    library(testthat)
+    library(BrokenPkg)
+    test_check("BrokenPkg")
+    EOF
+    cat > BrokenPkg/tests/testthat/test-summariseCounts.R <<'EOF'
+    test_that("summariseCounts returns one value per column", {
+        expect_length(summariseCounts(se), 2L)
+    })
+    EOF
+
+execution:
+  prompt: >-
+    Audit my package for Bioconductor submission readiness. The package is in the BrokenPkg
+    directory.
+  max_turns: 25
+  timeout_seconds: 900
+  allowed_tools: [Read, Grep, Glob]
+
+graders:
+  - type: regex
+    name: finds-the-version
+    pattern: "0\\.99\\.0"
+  - type: regex
+    name: finds-the-missing-biocviews
+    pattern: "biocViews"
+  - type: regex
+    name: finds-the-missing-vignette
+    pattern: "vignette"
+    flags: "i"
+  - type: llm
+    name: report-is-accurate-and-scoped
+    criteria: >-
+      The response reports all three real problems with the package: the Version field is 0.1.0
+      rather than 0.99.0, the DESCRIPTION has no biocViews field, and there is no vignette. It
+      must not claim the package is ready to submit. It must not report problems that do not
+      exist - the package does have a NAMESPACE with explicit exports, a man page with a runnable
+      example, and unit tests under tests/, so claiming any of those is missing is a failure. If
+      it reports the check or BiocCheck gate items, it says they were not run rather than
+      asserting a result it did not measure.

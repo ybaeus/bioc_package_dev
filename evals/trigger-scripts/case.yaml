@@ -1,0 +1,67 @@
+schema_version: "1.0"
+name: trigger-scripts
+description: >-
+  The starting point one step earlier than trigger-conversion: not a package yet, just analysis
+  code. The advice diverges here - scaffolding is the right move, where for an existing package it
+  is the wrong one - so an answer that treats scripts like a package is a failure even if every
+  fact in it is true.
+tags: [trigger, conversion, scripts]
+plugins: [bioconductor-package-dev]
+runs: 3
+
+context:
+  scaffold_script: |
+    set -euo pipefail
+    rm -rf crufty
+    mkdir -p crufty
+    cat > crufty/analysis.R <<'EOF'
+    setwd("/Users/me/projects/rnaseq")
+    install.packages("ggplot2")
+    library(ggplot2)
+    rm(list = ls())
+
+    counts <- read.csv("/Users/me/projects/rnaseq/counts.csv", row.names = 1)
+
+    res <- c()
+    for (i in 1:ncol(counts)) {
+        res[i] = sum(counts[, i] > 0)
+    }
+
+    plot(res)
+    EOF
+    cat > crufty/helpers.R <<'EOF'
+    normalise = function(m) {
+        t(t(m) / colSums(m))
+    }
+    EOF
+
+execution:
+  prompt: >-
+    I have this crufty analysis code, review it and make it into a Bioconductor-submittable
+    package. It is in the crufty directory.
+  max_turns: 25
+  timeout_seconds: 900
+  allowed_tools: [Read, Grep, Glob]
+
+graders:
+  - type: regex
+    name: says-it-is-not-a-package-yet
+    pattern: "(not (yet )?a package|no DESCRIPTION|needs to become a package)"
+    flags: "i"
+  - type: regex
+    name: names-the-load-time-side-effects
+    pattern: "(setwd|rm\\(list|install\\.packages)"
+  - type: regex
+    name: gives-the-starting-version
+    pattern: "0\\.99\\.0"
+  - type: llm
+    name: scaffolds-rather-than-audits
+    criteria: >-
+      The response recognises that this is analysis code and not a package yet, and that the first
+      move is to create a package around it rather than to audit it against the submission gate.
+      It should flag the load-time side effects (setwd, rm(list = ls()), install.packages, the
+      hardcoded absolute paths) as things that cannot survive into a package, and should say the
+      script body needs to become exported, documented functions. Credit raising the question of
+      whether this is a Software package or a Workflow package. Penalise a response that reports a
+      list of gate blockers as though a package existed, and penalise one that claims the code is
+      close to submittable.

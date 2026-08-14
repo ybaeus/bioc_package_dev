@@ -1,0 +1,23 @@
+schema_version: "1.0"
+name: trigger-cran-move
+description: >-
+  CRAN and Bioconductor are mutually exclusive - "a package can only be submitted to one or the
+  other". Answering this one wrong sends someone down a path that ends in a rejected submission,
+  so the answer has to be unambiguous rather than encouraging.
+tags: [trigger, conversion, facts]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+execution:
+  prompt: "My package is on CRAN, can I move it to Bioconductor?"
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: says-not-both
+    pattern: "(one or the other|cannot be (on|in) both|not be (on|in) both|only one of)"
+    flags: "i"
+  - type: regex
+    name: mentions-cran
+    pattern: "CRAN"
