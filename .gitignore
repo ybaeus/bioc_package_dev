@@ -5,3 +5,7 @@ context/
 .DS_Store
 Thumbs.db
 evals/results/
+
+# Python
+__pycache__/
+*.pyc
