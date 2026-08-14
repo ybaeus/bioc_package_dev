@@ -16,14 +16,21 @@ execution:
   timeout_seconds: 300
 
 graders:
-  - type: regex
-    name: stays-quiet-about-bioconductor
-    pattern: "bioconductor"
-    flags: "i"
-    match: not_contains
+  # Deliberately not a ban on the word "Bioconductor". A local smoke test showed the correct
+  # behaviour is to say "not Bioconductor, skipping that guidance" and then answer the CRAN
+  # question - which a blanket ban would have scored as a failure. What must not appear is
+  # substantive Bioconductor guidance.
   - type: regex
     name: does-not-impose-the-submission-version
     pattern: "0\\.99\\.0"
+    match: not_contains
+  - type: regex
+    name: does-not-drag-in-bioc-metadata
+    pattern: "(biocViews|BiocCheck|BiocManager)"
+    match: not_contains
+  - type: regex
+    name: does-not-mention-the-tracker
+    pattern: "Contributions"
     match: not_contains
   - type: regex
     name: actually-answers-the-question
