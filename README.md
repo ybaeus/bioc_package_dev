@@ -1,9 +1,7 @@
 # bioc_package_dev
 
 Reusable AI-assistant tooling for developing, maintaining, submitting, and reviewing
-Bioconductor R packages to the project's official standards. The knowledge is distilled from the
-official guide "Bioconductor Packages: Development, Maintenance, and Peer Review"
-(https://contributions.bioconductor.org) into portable, task-oriented summaries that any AI
+Bioconductor R packages to the project's official standards. The knowledge is distilled from the official guide "Bioconductor Packages: Development, Maintenance, and Peer Review" (https://contributions.bioconductor.org) into portable, task-oriented summaries that any AI
 coding assistant - or a human - can follow.
 
 It ships in two forms from one source of truth:
@@ -76,6 +74,33 @@ These tools read `AGENTS.md` natively. Either work inside a clone of this repo, 
 
 Read `knowledge/index.md` to find the topic, or `knowledge/workflow.md` for the full submission
 path. Point any assistant at the `knowledge/` directory.
+
+## Example prompts
+
+Written for the main case: you already have a working R package or tool on GitHub and want to
+contribute it to Bioconductor. Ask in your own words - these are shapes, not incantations.
+
+Getting oriented:
+
+- "I have an R package on GitHub, what do I need to do to submit it to Bioconductor?"
+- "My package is on CRAN, can I move it to Bioconductor?"
+- "What version number do I use for a new submission?"
+
+Working through specifics:
+
+- "I have 300 MB of reference data, where does it go?" (answer: not in the package)
+- "Write me a function that iterates over samples" (applies Bioconductor style, not tidyverse)
+- "My DESCRIPTION has no biocViews - what do I put there?"
+- "Walk me through what happens after I open the Contributions issue."
+
+Checking readiness - these route to the `bioc-package-review` agent, which audits and reports
+blockers rather than advising as you work:
+
+- "Audit my package for Bioconductor submission readiness."
+- "Would this package pass review? Tell me what a reviewer would flag."
+
+The split in one line each: the skill guides you while you work; the agent renders a verdict on
+demand.
 
 ## Keeping it current
 
