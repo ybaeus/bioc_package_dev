@@ -128,6 +128,14 @@ Note `biocthis_example_pkg()` is not a Bioconductor-ready generator - it wraps
 
 Pin a tag in `.github/workflows/verify.yml`, never a branch. A changed input name is a red build
 with a confusing message; reading the `action.yml` diff first saves the debugging.
+`scripts/verify.py` fails if the tag in the workflow and the tag in `knowledge/SOURCES.md` differ.
+
+Only three of the four actions are used: `setup-bioc`, `build-install-check`, `run-BiocCheck`.
+`use-bioc-caches` is deliberately excluded because it pins `actions/cache@v2`, which GitHub
+auto-fails - the job dies in "Set up job" with no step ever running, and the error names the
+deprecated cache rather than the action that pulled it in. Broken at `v1.0.16` and on `main` as
+of 2026-08-14. When bumping the pin, check whether that has been fixed; if it has, the workflow
+can drop its hand-rolled `actions/cache@v4` step.
 
 ## 6. Update the baseline
 

@@ -104,7 +104,20 @@ jobs:
         with:
           bioc-version: devel
 
-      - uses: grimbough/bioc-actions/use-bioc-caches@v1.0.16
+      # Deliberately NOT using grimbough/bioc-actions/use-bioc-caches. It pins actions/cache@v2,
+      # which GitHub now auto-fails, so the whole job dies in "Set up job" before running a step.
+      # Still broken on the action's main branch as of 2026-08-14, so a tag bump will not fix it.
+      # No loss here: that action caches BiocFileCache/ExperimentHub/AnnotationHub/biomaRt data,
+      # and the golden-path package downloads none of it. What is worth caching is the R library.
+      - name: Resolve the R library path
+        id: rlib
+        run: echo "path=$(Rscript -e 'cat(.libPaths()[1])')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.rlib.outputs.path }}
+          key: bioc-devel-${{ runner.os }}-${{ hashFiles('.github/workflows/verify.yml') }}
+          restore-keys: bioc-devel-${{ runner.os }}-
 
       - name: Install the tools this repo recommends
         run: |

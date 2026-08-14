@@ -14,7 +14,7 @@ Five upstreams, not one. A change to any of them can silently invalidate the gui
 | [Bioconductor/Contributions](https://github.com/Bioconductor/Contributions) `issue_template.md` | `d2631e3da63092937a96d476c6f7fb915a168069` (committed 2021-07-12) | 2026-08-14 | the pre-submission gate wording in `AGENTS.md`, `SKILL.md`, `agents/bioc-package-review.md` |
 | [Bioconductor/BiocCheck](https://github.com/Bioconductor/BiocCheck) | release 1.48.1, devel 1.49.30 | 2026-08-14 | what "BiocCheck clean" means; what the review agent should pre-empt |
 | [lcolladotor/biocthis](https://github.com/lcolladotor/biocthis) | release 1.22.0, devel 1.23.0 | 2026-08-14 | the scaffolding block in the three router files, and `scripts/golden-path.R` |
-| [grimbough/bioc-actions](https://github.com/grimbough/bioc-actions) | `v1.0.16` (`455bb7a12b1f0df041fc1078de581d2c508839d9`) | 2026-08-14 | `.github/workflows/verify.yml` |
+| [grimbough/bioc-actions](https://github.com/grimbough/bioc-actions) | `v1.0.16` (`455bb7a12b1f0df041fc1078de581d2c508839d9`); `setup-bioc`, `build-install-check` and `run-BiocCheck` only | 2026-08-14 | `.github/workflows/verify.yml` |
 
 Bioconductor cycle at the last refresh: Bioconductor release 3.23, devel 3.24, both on R 4.6.0
 (source: https://bioconductor.org/config.yaml). The same sentence appears in the three router
@@ -37,6 +37,12 @@ Machine-readable endpoints used for drift detection:
   `.../devel/bioc/VIEWS` (parse `Package:` / `Version:` pairs - the HTML landing pages are not
   reliably parseable)
 - bioc-actions tags: `https://api.github.com/repos/grimbough/bioc-actions/tags`
+
+Known issue, verified 2026-08-14: `bioc-actions/use-bioc-caches` pins `actions/cache@v2`, which
+GitHub auto-fails, killing the whole job during "Set up job" before any step runs. Broken at
+`v1.0.16` and on the action's `main`, so a tag bump does not fix it. The workflow here uses
+`actions/cache@v4` directly instead. Re-check on the next refresh; if upstream has moved to
+cache v4, switching back is a simplification. Do not re-add the action without checking.
 
 ## Chapter map: .Rmd source -> rendered slug -> knowledge file
 
