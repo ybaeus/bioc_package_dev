@@ -137,6 +137,23 @@ jobs:
             exit 1
           fi
 
+      # Install before build. The biocthis vignette template calls library() on the package, and
+      # R CMD build does not install what it is building - so a package whose vignette follows
+      # the template cannot be built from a clean library. Done here rather than inside the
+      # action so the diagnostic reaches the annotation instead of being buried in the log.
+      - name: Install and build the scaffolded package
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          if ! R CMD INSTALL GoldenPathPkg > install.log 2>&1; then
+            echo "::error::R CMD INSTALL failed: $(tail -c 900 install.log | tr '\n' ' ')"
+            exit 1
+          fi
+          if ! R CMD build GoldenPathPkg > build.log 2>&1; then
+            echo "::error::R CMD build failed: $(tail -c 1800 build.log | tr '\n' ' ')"
+            exit 1
+          fi
+
       - uses: grimbough/bioc-actions/build-install-check@v1.0.16
         with:
           package-directory: ${{ runner.temp }}/GoldenPathPkg
