@@ -16,8 +16,10 @@ Five upstreams, not one. A change to any of them can silently invalidate the gui
 | [lcolladotor/biocthis](https://github.com/lcolladotor/biocthis) | release 1.22.0, devel 1.23.0 | 2026-08-14 | the scaffolding block in the three router files, and `scripts/golden-path.R` |
 | [grimbough/bioc-actions](https://github.com/grimbough/bioc-actions) | `v1.0.16` (`455bb7a12b1f0df041fc1078de581d2c508839d9`) | 2026-08-14 | `.github/workflows/verify.yml` |
 
-Bioconductor cycle at the last refresh: release 3.23, devel 3.24, both on R 4.6.0
-(source: https://bioconductor.org/config.yaml).
+Bioconductor cycle at the last refresh: Bioconductor release 3.23, devel 3.24, both on R 4.6.0
+(source: https://bioconductor.org/config.yaml). The same sentence appears in the three router
+files, because an agent that is not told this triple will invent one; `verify.py --network`
+checks all four against config.yaml.
 
 Other baseline facts:
 

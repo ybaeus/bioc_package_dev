@@ -87,6 +87,10 @@ Install with `BiocManager::install(c("BiocCheck", "biocthis"))`. BiocCheck canno
 timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB memory) - those
 need a real build.
 
+Current cycle: Bioconductor release 3.23, devel 3.24, both on R 4.6.0. Build against devel for a
+new submission. Never guess this pair - it changes twice a year, `knowledge/SOURCES.md` records
+what was verified and when, and https://bioconductor.org/config.yaml is authoritative.
+
 Run the two BiocCheck calls via Bash from the package root when BiocCheck is installed, and parse
 the output into your findings. When BiocCheck is unavailable, mark those gate items "not run -
 BiocCheck unavailable" and audit statically from the files instead. Report the two timing items as

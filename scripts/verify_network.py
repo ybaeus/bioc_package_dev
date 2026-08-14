@@ -401,6 +401,36 @@ def check_tool_pins(res) -> None:
             )
 
 
+def check_bioc_cycle(res) -> None:
+    """The release/devel/R triple goes stale twice a year, and an agent will invent one."""
+    config = fetch("https://bioconductor.org/config.yaml")
+    wanted = {}
+    for key in ("release_version", "devel_version", "r_version_associated_with_devel"):
+        m = re.search(rf'^{key}:\s*"?([\d.]+)"?', config, re.M)
+        if m:
+            wanted[key] = m.group(1)
+    if len(wanted) != 3:
+        res.fail("bioconductor.org/config.yaml: could not read the release/devel/R versions")
+        return
+
+    expected = (
+        f"Bioconductor release {wanted['release_version']}, "
+        f"devel {wanted['devel_version']}, "
+        f"both on R {wanted['r_version_associated_with_devel']}"
+    )
+    for path in (
+        "AGENTS.md",
+        "skills/bioconductor-package-dev/SKILL.md",
+        "agents/bioc-package-review.md",
+        "knowledge/SOURCES.md",
+    ):
+        if normalize(expected) not in normalize(read(path)):
+            res.fail(
+                f"{path} does not record the current cycle ({expected}) - "
+                "an agent with no stated version will guess one"
+            )
+
+
 NETWORK_CHECKS = [
     ("commit-drift", check_commit_drift),
     ("url-liveness", check_url_liveness),
@@ -408,4 +438,5 @@ NETWORK_CHECKS = [
     ("tracker-gate", check_tracker_gate),
     ("chapter-coverage", check_chapter_coverage),
     ("tool-pins", check_tool_pins),
+    ("bioc-cycle", check_bioc_cycle),
 ]

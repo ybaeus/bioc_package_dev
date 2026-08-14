@@ -82,6 +82,10 @@ Install with `BiocManager::install(c("BiocCheck", "biocthis"))`. BiocCheck canno
 timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB memory) - those
 need a real build.
 
+Current cycle: Bioconductor release 3.23, devel 3.24, both on R 4.6.0. Build against devel for a
+new submission. Never guess this pair - it changes twice a year, `knowledge/SOURCES.md` records
+what was verified and when, and https://bioconductor.org/config.yaml is authoritative.
+
 ## Submission and git server (short)
 Host on the GitHub default branch, then open an issue (title = package name) at
 https://github.com/Bioconductor/Contributions/issues/new (Annotation packages: email
