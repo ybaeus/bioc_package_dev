@@ -539,6 +539,37 @@ def check_stamp_contract(res: Result) -> None:
             )
 
 
+# --------------------------------------------------------------------------------------------
+# Check 13 - the CI workflow pins the action version recorded in SOURCES.md
+# --------------------------------------------------------------------------------------------
+
+WORKFLOW = ".github/workflows/verify.yml"
+
+
+def check_workflow_pins(res: Result) -> None:
+    if not os.path.exists(os.path.join(ROOT, WORKFLOW)):
+        res.fail(f"{WORKFLOW} does not exist - the verification layers are not wired to CI")
+        return
+    text = read(WORKFLOW)
+
+    for m in re.finditer(r"uses:\s*(\S+)@(\S+)", text):
+        action, ref = m.groups()
+        if ref in ("main", "master", "devel", "HEAD"):
+            res.fail(f"{WORKFLOW}: {action} is pinned to a branch ({ref}), not a tag")
+
+    pinned = re.search(r"bioc-actions.*?\|\s*`(v[\d.]+)`", read("knowledge/SOURCES.md"))
+    if not pinned:
+        res.fail("knowledge/SOURCES.md: no bioc-actions tag pin found")
+        return
+    used = set(re.findall(r"grimbough/bioc-actions/\S+@(\S+)", text))
+    wrong = sorted(used - {pinned.group(1)})
+    if wrong:
+        res.fail(
+            f"{WORKFLOW} uses bioc-actions {wrong}, but knowledge/SOURCES.md pins "
+            f"{pinned.group(1)} - bump both together or neither"
+        )
+
+
 STATIC_CHECKS = [
     ("manifests", check_manifests),
     ("frontmatter", check_frontmatter),
@@ -552,6 +583,7 @@ STATIC_CHECKS = [
     ("no-emoji", check_no_emoji),
     ("single-source", check_single_source),
     ("stamp-contract", check_stamp_contract),
+    ("workflow-pins", check_workflow_pins),
 ]
 
 

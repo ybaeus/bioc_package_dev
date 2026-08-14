@@ -1,0 +1,154 @@
+name: verify
+
+# Four jobs, deliberately on four different triggers. The static checks are cheap enough to gate
+# every push. The golden path costs a Bioconductor install, so it runs on pull requests and on a
+# schedule. The fidelity job never gates a pull request: upstream changing is a reason to open an
+# issue, not a reason to block somebody's work. Evals cost tokens and run only when asked.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  schedule:
+    # Mondays, 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      run-evals:
+        description: "Also run the behavioral evals (costs tokens)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # verify.py compares each knowledge file's Fetched stamp against the date of the commit
+          # that last touched it, which a shallow clone cannot answer.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 scripts/verify.py
+
+  fidelity:
+    name: upstream fidelity
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check against upstream
+        id: check
+        continue-on-error: true
+        # `shell: bash` brings -o pipefail, without which tee would mask the failing exit status.
+        shell: bash
+        run: python3 scripts/verify.py --network --json | tee fidelity.json
+
+      - name: Open or update the drift issue
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="Upstream drift detected by the fidelity job"
+          body=$(mktemp)
+          {
+            echo "\`scripts/verify.py --network\` failed on $(date -u +%Y-%m-%d)."
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo "Work these top-down - the ordering in \`docs/REFRESH.md\` is by blast radius:"
+            echo
+            echo '```'
+            python3 -c "import json;d=json.load(open('fidelity.json'));[print('-',f) for f in d['failures']];[print('- warn:',w) for w in d['warnings']]"
+            echo '```'
+          } > "$body"
+
+          existing=$(gh issue list --state open --label upstream-drift --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$body"
+          else
+            gh label create upstream-drift --color FBCA04 --description "Tracked upstream moved" \
+              --force >/dev/null 2>&1 || true
+            gh issue create --title "$title" --label upstream-drift --body-file "$body"
+          fi
+
+      - name: Fail the job if upstream drifted
+        if: steps.check.outcome == 'failure'
+        run: exit 1
+
+  golden-path:
+    name: golden path
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: grimbough/bioc-actions/setup-bioc@v1.0.16
+        with:
+          bioc-version: devel
+
+      - uses: grimbough/bioc-actions/use-bioc-caches@v1.0.16
+
+      - name: Install the tools this repo recommends
+        run: |
+          Rscript -e 'BiocManager::install(c("biocthis", "BiocCheck", "roxygen2"), ask = FALSE)'
+
+      - name: Run the documented scaffolding chain
+        run: Rscript scripts/golden-path.R "${{ github.workspace }}/GoldenPathPkg"
+
+      - uses: grimbough/bioc-actions/build-install-check@v1.0.16
+        with:
+          package-directory: GoldenPathPkg
+
+      - uses: grimbough/bioc-actions/run-BiocCheck@v1.0.16
+        with:
+          package-directory: GoldenPathPkg
+          # Start at error. Tighten to warning once the baseline is known green - a scaffolded
+          # package legitimately trips some BiocCheck notes (no real vignette content yet).
+          error-on: error
+
+  evals:
+    name: behavioral evals
+    if: github.event_name == 'workflow_dispatch' && inputs.run-evals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require an API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "ANTHROPIC_API_KEY is not set - add it as a repository secret." >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate the plugin manifests
+        run: claude plugin validate .
+
+      - name: Run the eval suite
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: claude plugin eval . --ablation with-without
