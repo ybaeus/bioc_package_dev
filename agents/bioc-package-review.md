@@ -69,7 +69,12 @@ Tier 1 - requirements:
   automatic acceptance".
 - `BiocCheck::BiocCheckGitClone()` clean.
 - `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
-- Individual files <= 5 MB (upstream states this as "must").
+- At least 80% of the man pages documenting exported objects have a runnable example. Count them;
+  do not eyeball them. Below 80% BiocCheck errors, and a page whose example is wrapped entirely in
+  `\dontrun` or `\donttest` counts as none, so a package can look well documented and still fail.
+- Individual files <= 5 MB (upstream states this as "must") for software packages. Experiment data
+  and annotation packages follow `knowledge/development/non-software-pkgs.md`; do not report a
+  data file in one of those as a size blocker.
 - `biocViews`, vignette and man pages present; maintainer email valid and equal to the submitter;
   not on CRAN; hosted on the GitHub default branch.
 

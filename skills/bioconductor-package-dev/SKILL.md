@@ -40,7 +40,15 @@ Tier 1 - stated as requirements:
   these checks does not result in automatic acceptance" - a human review follows.
 - Run both entry points: `BiocCheck::BiocCheckGitClone()` and
   `BiocCheck::BiocCheck('new-package' = TRUE)`.
-- Individual files must be <= 5 MB. Upstream states this one as "must".
+- At least 80% of man pages documenting exported objects have a runnable example. Below that
+  BiocCheck raises an ERROR, not a warning, and an example wrapped entirely in `\dontrun` or
+  `\donttest` counts as no example at all - BiocCheck comments both out before parsing, so
+  wrapping an example to quiet a check moves the package toward the ERROR. Verified in
+  `checkExportsAreDocumented()`, BiocCheck devel, 2026-08-14.
+- Individual files must be <= 5 MB. Upstream states this one as "must", and states it for
+  **software** packages; experiment data and annotation packages follow
+  `knowledge/development/non-software-pkgs.md` instead, so do not report a data file in one of
+  those as a size blocker.
 - `biocViews` present; a vignette and man pages present; maintainer email valid and belonging to
   the person submitting; not on CRAN ("a package can only be submitted to one or the other");
   hosted on the GitHub default branch. BiocCheck catches most of these.
@@ -60,7 +68,12 @@ the Bioconductor team. Detail: `knowledge/maintenance.md`.
 
 ## Bioconductor code style (differs from tidyverse)
 Use `<-` for assignment, 4-space indentation, 80-column lines; prefer vectorized code; avoid
-`1:n` (use `seq_len`/`seq_along`). Detail: `knowledge/development/r-code.md`.
+`1:n` (use `seq_len`/`seq_along`). Do the style pass last, and keep it a style pass: it changes
+how the code reads, never what it computes. `1:n` -> `seq_len(n)` and `sapply` -> `vapply` are
+behavior changes at exactly the edge cases that motivate them - `n == 0`, and a `FUN.VALUE`
+mismatch that `sapply` swallows and `vapply` raises. Apply them where the new behavior is the
+intended one, leave them where you cannot tell, and run the tests before and after so the diff
+is provably cosmetic. Detail: `knowledge/development/r-code.md`.
 
 ## Tooling (use these, do not reimplement them)
 This repo ships no validator and no templates on purpose - Bioconductor already maintains both,

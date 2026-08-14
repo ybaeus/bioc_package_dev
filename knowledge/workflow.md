@@ -60,7 +60,12 @@ is to fix.
    Existing packages usually have a README doing the vignette's job. See
    `development/documentation.md`.
 9. **Code style** - `<-`, 4-space indent, 80 columns, no `1:n`. Mechanical, so do it last; doing it
-   first only creates conflicts with the changes above.
+   first only creates conflicts with the changes above. Keep it a style pass: it changes how the
+   code reads, never what it computes. The two rewrites worth watching are behavior changes at
+   exactly the edge cases that motivate them - `1:n` -> `seq_len(n)` differs when `n == 0`, and
+   `sapply` -> `vapply` turns a type mismatch `sapply` swallows into an error. Apply them where
+   the new behavior is the intended one, leave them where you cannot tell, and run the tests
+   before and after so the diff is provably cosmetic.
 10. **Run the gate** - Phase 1 below, then Phase 2 onward unchanged.
 
 Steps 1-5 are usually a day. Step 6 is where a conversion either goes smoothly or becomes a
@@ -83,8 +88,12 @@ Tier 1 - stated as requirements:
 - `BiocCheck::BiocCheck('new-package' = TRUE)` clean (no errors, no warnings). The tracker calls
   passing check and BiocCheck "a minimum requirement for package acceptance", and notes that
   passing "does not result in automatic acceptance" - review still follows.
-- Every individual file <= 5 MB (upstream: "must be").
+- Every individual file <= 5 MB (upstream: "must be"), for **software** packages. Experiment data
+  and annotation packages follow `development/non-software-pkgs.md` instead.
 - `biocViews` field present and valid; a vignette; man pages for exported objects.
+- At least 80% of the man pages documenting exported objects have a runnable example - below that
+  BiocCheck errors, and a `\dontrun`-only example counts as none. See
+  `development/documentation.md`.
 - Valid maintainer email; maintainer == the person who will submit.
 
 Tier 2 - stated as should or recommended. Expected in practice and a reviewer will ask, but a
