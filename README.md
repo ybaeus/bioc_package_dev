@@ -46,9 +46,12 @@ a competing copy would have made this repo violate the guidance it teaches.
 
 For the guidance itself, none - it is markdown. To actually build and check a package you need:
 - R (current release, plus R-devel for the final submission check).
-- `BiocManager::install(c("BiocCheck", "biocthis"))` - BiocCheck validates, biocthis scaffolds.
-  These are the two tools the skill and the agent tell you to run.
-- Optional: `usethis`, `devtools`, `roxygen2`.
+- `BiocManager::install(c("BiocCheck", "biocthis", "BiocStyle", "knitr", "RefManageR",
+  "sessioninfo", "testthat", "roxygen2"))` - BiocCheck validates and biocthis scaffolds; the rest
+  are what `biocthis::use_bioc_vignette()` refuses to run without. The exact list, and the traps
+  in the scaffolding chain, are in the tooling block in `AGENTS.md`.
+- Pandoc, if you want to build an R Markdown vignette locally.
+- Optional: `usethis`, `devtools`.
 
 To run this repo's own verification you need Python 3 (stdlib only) for `scripts/verify.py`; the
 network layer additionally needs outbound HTTPS. No R is required for the static layer.
