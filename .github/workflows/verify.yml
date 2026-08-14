@@ -94,7 +94,8 @@ jobs:
 
   golden-path:
     name: golden path
-    if: github.event_name != 'push'
+    # TEMPORARY: allowing push so this job runs once. It has never executed anywhere. Reverting
+    # to `github.event_name != 'push'` immediately after.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
