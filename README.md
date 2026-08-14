@@ -90,12 +90,14 @@ path. Point any assistant at the `knowledge/` directory.
 
 ## Example prompts
 
-Written for the main case: you already have a working R package or tool on GitHub and want to
-contribute it to Bioconductor. Ask in your own words - these are shapes, not incantations.
+Written for the main case: you already have R work on GitHub - a package, or just analysis code -
+and want to contribute it to Bioconductor. Ask in your own words - these are shapes, not
+incantations.
 
 Getting oriented:
 
 - "I have an R package on GitHub, what do I need to do to submit it to Bioconductor?"
+- "I have this crufty analysis code, review it and make it into a Bioconductor-submittable package"
 - "My package is on CRAN, can I move it to Bioconductor?"
 - "What version number do I use for a new submission?"
 

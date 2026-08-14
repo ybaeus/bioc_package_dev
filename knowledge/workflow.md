@@ -3,11 +3,38 @@
 The sequential path from local package to first Bioconductor release. The per-chapter files
 under this directory are reference; this file is the process. Follow it top to bottom.
 
-## Converting an existing package (start here if code already exists)
+## Converting existing work (start here whenever code already exists)
 
-Most submitters are not starting from an empty directory - they have a working package or tool on
-GitHub. Do not scaffold from scratch. Work the list below in order; it is ordered by how expensive
-the problem is to discover late, not by how hard it is to fix.
+Most submitters are not starting from an empty directory. Two different starting points, and the
+first thing to do is work out which one you are at - the advice diverges immediately.
+
+**A package already** (there is a `DESCRIPTION`): skip to the numbered list below. Do not scaffold
+from scratch; you would overwrite metadata you already have.
+
+**Scripts, not a package** (no `DESCRIPTION` - analysis code, a bag of `.R` files, a repo of
+notebooks): scaffolding is exactly right here, and it comes first. Do this, then join the list at
+step 1.
+
+- **Settle the type before writing anything.** A pile of analysis code is often not a Software
+  package. If the point is to demonstrate an analysis using existing packages, it is a Workflow
+  package and the rules differ - no `man/`, `R/` or `data/` required. See
+  `development/non-software-pkgs.md` and `01-submissions.md`. Getting this wrong costs the most
+  and is the cheapest thing to check.
+- **Create the package**, then run the biocthis chain in the tooling block in `AGENTS.md`. This is
+  the case that block was written for.
+- **Turn top-level script code into functions.** Anything that runs at load time is a defect here:
+  no `setwd()`, no `rm(list = ls())`, no `install.packages()` or `library()` side effects, no
+  hardcoded paths. Paths become arguments. See `development/r-code.md`.
+- **Decide what is exported.** Scripts have no public interface; a package is mostly interface.
+  Export the few functions a user calls, keep the rest internal, and document every export with
+  roxygen - man pages for exported objects are a gate item.
+- **Find the data.** Scripts usually read local files that will not exist on the build machine.
+  Small examples go in `inst/extdata`; anything large goes to ExperimentHub/AnnotationHub. See
+  `development/data.md`.
+- **Then the numbered list below**, starting at step 1.
+
+The numbered list is ordered by how expensive the problem is to discover late, not by how hard it
+is to fix.
 
 1. **Eligibility and type** - Phase 0 below. Cheapest to answer and the only one that can end the
    effort entirely.

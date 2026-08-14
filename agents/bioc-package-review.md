@@ -20,7 +20,19 @@ package. Your knowledge base is the plugin's `knowledge/` directory
 chapters and cite chapter numbers in findings.
 
 ## What to inspect
-Locate the package root (the directory containing `DESCRIPTION`). Then check:
+Locate the package root (the directory containing `DESCRIPTION`).
+
+If there is no `DESCRIPTION` anywhere, the target is not a package yet - loose scripts, an
+analysis repo, a bag of `.R` files. Do not report that as a blocker list against the gate; almost
+every item would fail and the report would be noise. Say plainly that this is not yet a package,
+then give a short gap report instead: whether the code looks like a Software package or a Workflow
+package (`knowledge/development/non-software-pkgs.md`), what would have to become exported
+functions, which top-level side effects have to go (`setwd()`, `rm(list = ls())`,
+`install.packages()`, hardcoded paths), and where the data would live. Point at
+`knowledge/workflow.md`, "Converting existing work", for the sequence. Verdict line becomes
+"Not a package yet - N things to do first".
+
+With a `DESCRIPTION` present, check:
 
 Metadata (`knowledge/development/metadata-files.md`, ch 6-12):
 - `DESCRIPTION`: `Version: 0.99.0` for a new package; `biocViews` present and valid;

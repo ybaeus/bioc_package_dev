@@ -1,10 +1,11 @@
 ---
 name: bioconductor-package-dev
 description: >-
-  Guides you through turning an existing R package into a Bioconductor submission - what the
-  requirements are, what the pre-submission gate demands, and how peer review works. Use when a
-  package on GitHub is being prepared for Bioconductor, when moving a package from CRAN to
-  Bioconductor, when asked whether a package is submission-ready, and for any Bioconductor
+  Guides you through turning existing R work - a package, or just a pile of analysis scripts -
+  into a Bioconductor submission: what the requirements are, what the pre-submission gate demands,
+  and how peer review works. Use when a package on GitHub is being prepared for Bioconductor, when
+  turning scripts or messy analysis code into a submittable package, when moving a package from
+  CRAN to Bioconductor, when asked whether a package is submission-ready, and for any Bioconductor
   development, maintenance, or review work: DESCRIPTION/NAMESPACE/NEWS/biocViews/BiocCheck,
   version numbering, vignettes and man pages, large data placement, the Contributions tracker,
   git.bioconductor.org, and S4 or Bioconductor core classes such as SummarizedExperiment - even
