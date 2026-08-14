@@ -1,0 +1,27 @@
+schema_version: "1.0"
+name: workflow-after-submission
+description: >-
+  What happens after the issue is opened is the part submitters have no way to guess: an
+  automated build fires first, a human reviewer comes later, and every fix needs a version bump
+  to propagate. Tests that workflow.md is reachable and ordered, not just present.
+tags: [router, workflow]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+execution:
+  prompt: "Walk me through what happens after I open the Contributions issue."
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: names-the-builder
+    pattern: "(Single Package Builder|SPB)"
+  - type: regex
+    name: mentions-review
+    pattern: "review"
+    flags: "i"
+  - type: regex
+    name: mentions-the-version-bump
+    pattern: "(bump|increment)"
+    flags: "i"

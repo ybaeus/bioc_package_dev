@@ -4,3 +4,4 @@ context/
 # OS
 .DS_Store
 Thumbs.db
+evals/results/

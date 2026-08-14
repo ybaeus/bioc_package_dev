@@ -1,0 +1,26 @@
+schema_version: "1.0"
+name: style-bioc
+description: >-
+  Bioconductor style differs from the tidyverse defaults a model reaches for: assignment arrow,
+  four-space indent, and seq_len/seq_along instead of 1:n. The 1:n habit is not cosmetic - it
+  iterates backwards when the length is zero - and BiocCheck flags it.
+tags: [style]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+execution:
+  prompt: "Write me a function that iterates over samples"
+  max_turns: 6
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: uses-assignment-arrow
+    pattern: "<-"
+  - type: regex
+    name: uses-safe-sequence
+    pattern: "(seq_len|seq_along)"
+  - type: regex
+    name: avoids-one-colon-n
+    pattern: "1:(n|length\\(|ncol\\(|nrow\\()"
+    match: not_contains

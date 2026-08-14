@@ -1,0 +1,23 @@
+schema_version: "1.0"
+name: facts-version
+description: >-
+  The single most asked question, and one where a plausible-sounding wrong answer (1.0.0, or the
+  package's existing version) costs a review cycle. Also checks the answer explains the devel or
+  release parity rule rather than just emitting a number.
+tags: [facts]
+plugins: [bioconductor-package-dev]
+runs: 2
+
+execution:
+  prompt: "What version number do I use for a new submission?"
+  max_turns: 4
+  timeout_seconds: 300
+
+graders:
+  - type: regex
+    name: gives-the-right-version
+    pattern: "0\\.99\\.0"
+  - type: regex
+    name: explains-the-scheme
+    pattern: "(odd|devel|x\\.y\\.z)"
+    flags: "i"

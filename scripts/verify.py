@@ -570,6 +570,50 @@ def check_workflow_pins(res: Result) -> None:
         )
 
 
+# --------------------------------------------------------------------------------------------
+# Check 14 - documented example prompts are the prompts CI actually exercises
+# --------------------------------------------------------------------------------------------
+
+def eval_cases() -> list[str]:
+    return [p for p in tracked_files() if p.startswith("evals/") and p.endswith("case.yaml")]
+
+
+def check_evals(res: Result) -> None:
+    cases = eval_cases()
+    if not cases:
+        res.fail("evals/ has no case.yaml files - Layer 4 is not wired up")
+        return
+
+    for path in cases:
+        text = read(path)
+        name = os.path.basename(os.path.dirname(path))
+        if "schema_version:" not in text:
+            res.fail(f"{path}: no schema_version - the eval runner rejects the case")
+        m = re.search(r"^name:\s*(\S+)", text, re.M)
+        if not m:
+            res.fail(f"{path}: no name field")
+        elif m.group(1) != name:
+            res.fail(f"{path}: name {m.group(1)!r} does not match its directory {name!r}")
+        if "graders:" not in text:
+            res.fail(f"{path}: no graders - a case with no grader scores nothing")
+
+    # Every prompt the README advertises has to be one the suite actually runs, or the docs
+    # drift away from what is tested and the examples become folklore.
+    body = section(read("README.md"), "## Example prompts") or ""
+    documented = re.findall(r'^- "([^"]+)"', body, re.M)
+    if not documented:
+        res.fail("README.md: no quoted prompts found under '## Example prompts'")
+        return
+
+    haystack = " ".join(re.sub(r"\s+", " ", read(p)) for p in cases)
+    for prompt in documented:
+        if re.sub(r"\s+", " ", prompt) not in haystack:
+            res.fail(
+                f"README.md documents the prompt {prompt!r}, which no eval case runs - "
+                "add a case for it or drop it from the README"
+            )
+
+
 STATIC_CHECKS = [
     ("manifests", check_manifests),
     ("frontmatter", check_frontmatter),
@@ -584,6 +628,7 @@ STATIC_CHECKS = [
     ("single-source", check_single_source),
     ("stamp-contract", check_stamp_contract),
     ("workflow-pins", check_workflow_pins),
+    ("evals", check_evals),
 ]
 
 

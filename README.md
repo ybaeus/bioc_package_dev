@@ -137,7 +137,7 @@ firing while every file still looks fine. Four layers catch different failures.
 | Static | `python3 scripts/verify.py` | broken internal paths, gitignored references, manifest and frontmatter errors, missing `Source:`/`Fetched` stamps, rule text that has drifted between the files that duplicate it, emoji, a stale README tree |
 | Fidelity | `python3 scripts/verify.py --network` | upstream commit drift mapped to the affected summaries, dead chapter URLs, thresholds that no longer match upstream, summaries that harden an upstream "should" into a "must", gate wording that no longer matches the submission tracker, new upstream chapters nobody summarized |
 | Golden path | `Rscript scripts/golden-path.R` + `R CMD build` + `BiocCheck` in CI | the scaffolding commands this repo tells you to run, by running them and checking the result with real Bioconductor tooling |
-| Behavior | `claude plugin eval .` | the skill firing when it should, staying quiet when it should not, and returning the right values - including every prompt in "Example prompts" above |
+| Behavior | `claude plugin eval . --scaffold` | the skill firing when it should, staying quiet when it should not, and returning the right values - including every prompt in "Example prompts" above |
 
 The fidelity job is a weekly cron rather than a PR gate: upstream changing is a reason to open an
 issue, not to block someone's pull request.
