@@ -169,12 +169,12 @@ jobs:
         if: failure()
         shell: bash
         run: |
+          found=$(find "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -name '*.BiocCheck' -o -name '00BiocCheck.log' 2>/dev/null | tr '\n' ' ')
+          echo "::error::BiocCheck artifacts: ${found:-none}"
           log=$(find "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -name '00BiocCheck.log' 2>/dev/null | head -1)
-          if [ -z "$log" ]; then
-            echo "::error::BiocCheck failed and no 00BiocCheck.log was found"
-            exit 0
+          if [ -n "$log" ]; then
+            echo "::error::BiocCheck log tail: $(tail -c 2000 "$log" | tr '\n' ' ')"
           fi
-          echo "::error::BiocCheck: $(grep -E '(ERROR|WARNING)' "$log" | tail -c 1800 | tr '\n' ' ')"
 
   evals:
     name: behavioral evals
