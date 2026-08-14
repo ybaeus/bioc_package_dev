@@ -104,6 +104,10 @@ jobs:
         with:
           bioc-version: devel
 
+      # setup-bioc does not install pandoc, and the biocthis vignette template is R Markdown, so
+      # R CMD build fails at "creating vignettes" without this.
+      - uses: r-lib/actions/setup-pandoc@v2
+
       # Deliberately NOT using grimbough/bioc-actions/use-bioc-caches. It pins actions/cache@v2,
       # which GitHub now auto-fails, so the whole job dies in "Set up job" before running a step.
       # Still broken on the action's main branch as of 2026-08-14, so a tag bump will not fix it.
@@ -137,18 +141,12 @@ jobs:
             exit 1
           fi
 
-      # Install before build. The biocthis vignette template calls library() on the package, and
-      # R CMD build does not install what it is building - so a package whose vignette follows
-      # the template cannot be built from a clean library. Done here rather than inside the
-      # action so the diagnostic reaches the annotation instead of being buried in the log.
-      - name: Install and build the scaffolded package
+      # Built here rather than only inside the action so the diagnostic reaches the job
+      # annotation instead of being buried in a log that needs a token to read.
+      - name: Build the scaffolded package
         shell: bash
         working-directory: ${{ runner.temp }}
         run: |
-          if ! R CMD INSTALL GoldenPathPkg > install.log 2>&1; then
-            echo "::error::R CMD INSTALL failed: $(tail -c 900 install.log | tr '\n' ' ')"
-            exit 1
-          fi
           if ! R CMD build GoldenPathPkg > build.log 2>&1; then
             echo "::error::R CMD build failed: $(tail -c 1800 build.log | tr '\n' ' ')"
             exit 1
