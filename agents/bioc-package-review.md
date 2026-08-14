@@ -83,7 +83,17 @@ biocthis::use_bioc_citation()
 biocthis::use_bioc_github_action()
 ```
 
-Install with `BiocManager::install(c("BiocCheck", "biocthis"))`. BiocCheck cannot measure the two
+Install with:
+
+```r
+BiocManager::install(c(
+    "BiocCheck", "biocthis",
+    # use_bioc_vignette() adds these to Suggests and refuses to run unless they are installed
+    "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat"
+))
+```
+
+BiocCheck cannot measure the two
 timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB memory) - those
 need a real build.
 

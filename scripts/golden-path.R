@@ -26,7 +26,14 @@ outdir <- if (length(args) >= 1) {
 }
 pkg <- basename(outdir)
 
-for (dep in c("usethis", "biocthis", "roxygen2")) {
+## use_bioc_vignette() calls usethis::use_package(), which check_installed()s each Suggests it
+## adds - so BiocStyle and friends must be present, not merely declared. Finding that out here
+## with a clear message beats finding it out mid-chain.
+deps <- c(
+    "usethis", "biocthis", "roxygen2",
+    "BiocStyle", "knitr", "RefManageR", "sessioninfo", "testthat"
+)
+for (dep in deps) {
     if (!requireNamespace(dep, quietly = TRUE)) {
         stop("golden-path needs ", dep, ": BiocManager::install(\"", dep, "\")", call. = FALSE)
     }
