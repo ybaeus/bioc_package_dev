@@ -42,5 +42,5 @@ Authors: expect the reviewer to walk this checklist publicly in your submission 
 - Sign up via the volunteer Google form (linked from the chapter).
 - Volunteers are then assigned incoming packages from the New Submission Tracker.
 
-Source: https://contributions.bioconductor.org/reviewer-resources-overview.html , https://contributions.bioconductor.org/review-expectation.html , https://contributions.bioconductor.org/reviewtools.html , https://contributions.bioconductor.org/review-volunteer-chapter.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Source: [Reviewer resources overview](https://contributions.bioconductor.org/reviewer-resources-overview.html) , [Review expectations](https://contributions.bioconductor.org/review-expectation.html) , [Reviewer tools](https://contributions.bioconductor.org/reviewtools.html) , [Volunteering to review](https://contributions.bioconductor.org/review-volunteer-chapter.html)
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).

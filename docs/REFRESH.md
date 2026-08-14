@@ -4,8 +4,24 @@ How to keep this repo in sync with the upstream projects it depends on. Run it w
 cuts a release (around April and October), when the weekly `fidelity` CI job opens a drift issue,
 or before any plugin version bump.
 
-Pinned baseline state lives in `knowledge/SOURCES.md`. This file is the procedure; that file is the
-data. Both ship with the plugin.
+Pinned baseline state lives in `skills/bioc-pkg-dev/knowledge/SOURCES.md`. This file is the
+procedure; that file is the data. Both ship with the plugin.
+
+## The mirror rule
+
+`skills/bioc-pkg-dev/` is byte-identical to the skill of the same name in
+[bioconductor/ai-agent-skills](https://github.com/Bioconductor/ai-agent-skills). Every content
+fix below therefore lands **there first**, and comes back here as a sync:
+
+1. Fix the summary in a branch of `ai-agent-skills`, restamping `Fetched` in the same commit.
+2. Open the PR there. Content is not correct here until it is correct upstream.
+3. Sync back: `rsync -a --delete <upstream>/skills/bioc-pkg-dev/ skills/bioc-pkg-dev/`, then
+   `python3 scripts/verify.py`.
+
+Editing the mirror in place is how the two silently diverge, and nothing in CI here will catch
+it - the check that would have to catch it lives in the other repository. The files this
+repository owns outright, and may change freely, are `AGENTS.md`,
+`agents/bioc-package-review.md`, `README.md`, `scripts/`, `evals/`, and this runbook.
 
 ## Tracked upstreams
 
@@ -13,7 +29,7 @@ Five, not one. A change to any of them can silently invalidate the guidance.
 
 | Upstream | How to detect a change | What it invalidates |
 |---|---|---|
-| `Bioconductor/pkgrevdocs` | commits API `sha` vs the pin; guide TOC vs the slug map | all of `knowledge/` |
+| `Bioconductor/pkgrevdocs` | commits API `sha` vs the pin; guide TOC vs the slug map | all of `skills/bioc-pkg-dev/knowledge/` |
 | `Bioconductor/Contributions` `issue_template.md` | commits API for that path vs the pin | the pre-submission gate in `AGENTS.md`, `SKILL.md`, `agents/bioc-package-review.md` |
 | `Bioconductor/BiocCheck` | release version + NEWS | what "BiocCheck clean" means; what the review agent should pre-empt |
 | `lcolladotor/biocthis` | release version; the `use_bioc_*()` function list | the scaffolding commands the agent recommends, and `scripts/golden-path.R` |
@@ -27,10 +43,12 @@ do with the result.
 
 When more than one signal fires, work top-down. The ordering is by blast radius, not by effort.
 
-1. **Numeric or modal audit failure** - a specific claim in `knowledge/` is now factually wrong and
-   is being served to users. Fix immediately and restamp the file.
+1. **Numeric or modal audit failure** - a specific claim in `skills/bioc-pkg-dev/knowledge/` is
+   now factually wrong and is being served to users. Fix immediately and restamp the file,
+   upstream first per the mirror rule.
 2. **A chapter URL 404s or redirects** - a chapter was renamed or removed, so the slug map is wrong.
-   Fix `knowledge/SOURCES.md` before touching content; every later step depends on the map.
+   Fix `skills/bioc-pkg-dev/knowledge/SOURCES.md` before touching content; every later step
+   depends on the map.
 3. **A mapped `.Rmd` changed** - those specific summaries are stale. Scoped refresh only.
 4. **Pin moved but no mapped chapter changed** - cosmetic upstream change. Bump the pin, no content
    work.
@@ -40,19 +58,19 @@ When more than one signal fires, work top-down. The ordering is by blast radius,
 ### Detect
 
 - Current commit: `https://api.github.com/repos/Bioconductor/pkgrevdocs/commits/devel`, field `sha`.
-  Compare against the pinned SHA in `knowledge/SOURCES.md`. Equal means stop.
+  Compare against the pinned SHA in `skills/bioc-pkg-dev/knowledge/SOURCES.md`. Equal means stop.
 - Changed files: `https://github.com/Bioconductor/pkgrevdocs/compare/<pinned-sha>...devel`
 - Chapter set: compare the guide TOC (`https://contributions.bioconductor.org/index.html`) against
-  the slug map in `knowledge/SOURCES.md`. This is the only way to notice an **added** chapter -
+  the slug map in `skills/bioc-pkg-dev/knowledge/SOURCES.md`. This is the only way to notice an **added** chapter -
   every existing file still checks out, so no per-file check will see it.
 
 ### Map changes to files
 
-For each changed chapter slug, look up its target in the `knowledge/SOURCES.md` map. Only those
+For each changed chapter slug, look up its target in the `skills/bioc-pkg-dev/knowledge/SOURCES.md` map. Only those
 files need regenerating.
 
 - New chapter: new summary file, plus a router entry in `AGENTS.md`, plus a map entry in
-  `knowledge/SOURCES.md`.
+  `skills/bioc-pkg-dev/knowledge/SOURCES.md`.
 - Removed chapter: delete its section and fix inbound references.
 - Renamed chapter: update the slug map and the `Source:` footer of the affected file.
 
@@ -86,7 +104,7 @@ authority on what submission requires.
 - Content: `https://raw.githubusercontent.com/Bioconductor/Contributions/devel/issue_template.md`
 
 If a checkbox is added, removed, or reworded, update the gate in all three router files and in
-`knowledge/01-submissions.md`. This template changes rarely - the pinned commit dates to 2021 - so
+`skills/bioc-pkg-dev/knowledge/01-submissions.md`. This template changes rarely - the pinned commit dates to 2021 - so
 any movement is worth reading in full rather than skimming a diff.
 
 ## 3. BiocCheck (the validator)
@@ -128,7 +146,7 @@ Note `biocthis_example_pkg()` is not a Bioconductor-ready generator - it wraps
 
 Pin a tag in `.github/workflows/verify.yml`, never a branch. A changed input name is a red build
 with a confusing message; reading the `action.yml` diff first saves the debugging.
-`scripts/verify.py` fails if the tag in the workflow and the tag in `knowledge/SOURCES.md` differ.
+`scripts/verify.py` fails if the tag in the workflow and the tag in `skills/bioc-pkg-dev/knowledge/SOURCES.md` differ.
 
 Only three of the four actions are used: `setup-bioc`, `build-install-check`, `run-BiocCheck`.
 `use-bioc-caches` is deliberately excluded because it pins `actions/cache@v2`, which GitHub
@@ -139,7 +157,7 @@ can drop its hand-rolled `actions/cache@v4` step.
 
 ## 6. Update the baseline
 
-In `knowledge/SOURCES.md`, set every pin you verified: the pkgrevdocs SHA and commit date, the
+In `skills/bioc-pkg-dev/knowledge/SOURCES.md`, set every pin you verified: the pkgrevdocs SHA and commit date, the
 Contributions issue_template SHA, the BiocCheck and biocthis versions, the bioc-actions tag, and
 the "Summaries fetched" date.
 
@@ -166,11 +184,22 @@ Run in this order; each is cheaper than the next and catches different failures.
 - Commit and push to `github.com/ybaeus/bioc_package_dev`. Marketplace users then run
   `/plugin marketplace update` followed by `/plugin update bioc-pkg-dev`.
 
+## Repository CI pins
+
+These belong to this repository, not to the skill. They used to live in the `SOURCES.md` upstream
+table; that file is now part of the mirrored bundle and carries only what upstream carries, so a
+repo-specific action pin has no home there. `verify.py --list` check `workflow-pins` reads this
+table and fails if `.github/workflows/verify.yml` drifts from it.
+
+| Action | Pin | Verified | Notes |
+|---|---|---|---|
+| [grimbough/bioc-actions](https://github.com/grimbough/bioc-actions) | `v1.0.16` (`455bb7a12b1f0df041fc1078de581d2c508839d9`); `setup-bioc`, `build-install-check` and `run-BiocCheck` only | 2026-08-14 | `use-bioc-caches` is deliberately unused - it pins `actions/cache@v2`, which GitHub auto-fails, killing the job during "Set up job" before any step runs. Broken at `v1.0.16` and on `main`, so a tag bump does not fix it; the workflow uses `actions/cache@v4` directly. Re-check on each refresh. |
+
 ## Notes
 
 - The canonical chapter link in each summary is always authoritative. A lagging summary still points
   readers at the correct source, which is why the `Source:` footer is mandatory.
-- Never edit a `knowledge/` file without updating its `Fetched` stamp in the same commit.
+- Never edit a `skills/bioc-pkg-dev/knowledge/` file without updating its `Fetched` stamp in the same commit.
 - Environment: `env -u CURL_CA_BUNDLE curl -sS <https url>` fetches content fine; the
   `CURL_CA_BUNDLE` variable is set to a stale path and unsetting it is sufficient. `-k` is not
   needed and should not be used. R 4.4.0 at `/usr/local/bin`; `claude` at `/opt/homebrew/bin`;

@@ -3,6 +3,7 @@
 Covers: Chapter 13 - Documentation (man pages and vignettes).
 
 ## Man pages (Rd files)
+
 - Every exported function and class must have a man page.
 - Class documentation must be very detailed about the structure and type of
   information stored in the object.
@@ -13,6 +14,7 @@ Covers: Chapter 13 - Documentation (man pages and vignettes).
   directly as Rd.
 
 ## Examples (runnable)
+
 - All man pages should have runnable examples.
 - The enforced threshold is 80%: BiocCheck counts man pages that document an
   exported object, and raises an **ERROR** - "At least 80% of man pages
@@ -28,6 +30,7 @@ Covers: Chapter 13 - Documentation (man pages and vignettes).
 - If wrapping is unavoidable, prefer `\donttest` over `\dontrun`.
 
 ## Vignettes
+
 - At least one vignette is required, in Rmd (recommended), qmd (Quarto), or Rnw
   (Sweave) format.
 - Code must be executable and demonstrate actual functionality: "Non-trivial
@@ -40,10 +43,11 @@ Covers: Chapter 13 - Documentation (man pages and vignettes).
   DESCRIPTION.
 
 ## Overall documentation standards
+
 - Vignettes demonstrating core functionality.
 - Man pages for all exported functions, each with runnable examples.
 - Well-documented data structures and datasets.
 - References to the methods used and to related packages.
 
-Source: https://contributions.bioconductor.org/docs.html
+Source: [Documentation](https://contributions.bioconductor.org/docs.html)
 Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).

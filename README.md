@@ -19,23 +19,31 @@ bioc_package_dev/
 ├── GEMINI.md                 # imports AGENTS.md (for Gemini CLI)
 ├── CLAUDE.md                 # imports AGENTS.md (for Claude Code)
 ├── LICENSE                   # Apache-2.0
-├── knowledge/                # single source of truth - portable markdown summaries
-│   ├── index.md              # topic router across all summaries
-│   ├── workflow.md           # end-to-end runbook, incl. converting an existing package
-│   ├── SOURCES.md            # .Rmd -> slug -> file map + pins for all tracked upstreams
-│   ├── 01-submissions.md     # ch 1
-│   ├── development/          # ch 2-23 (naming, metadata, docs, data, tests, code, ...)
-│   ├── maintenance.md        # ch 24-30
-│   ├── reviewer.md           # ch 31-33
-│   └── appendices.md         # A-H
+├── skills/bioc-pkg-dev/      # mirrors skills/bioc-pkg-dev in bioconductor/ai-agent-skills
+│   ├── SKILL.md              # the skill, in that repository's required layout
+│   └── knowledge/            # portable markdown summaries, beside the skill as upstream keeps them
+│       ├── index.md          # topic router across all summaries
+│       ├── workflow.md       # end-to-end runbook, incl. converting an existing package
+│       ├── SOURCES.md        # .Rmd -> slug -> file map + upstream pins
+│       ├── 01-submissions.md # ch 1
+│       ├── development/      # ch 2-23 (naming, metadata, docs, data, tests, code, ...)
+│       ├── maintenance.md    # ch 24-30
+│       ├── reviewer.md       # ch 31-33
+│       └── appendices.md     # A-H
+├── agents/bioc-package-review.md   # review agent (Claude Code only)
 ├── docs/REFRESH.md           # how to re-sync with upstream when it moves
 ├── scripts/                  # verification, not package tooling (see "How this is verified")
 ├── evals/                    # behavioral test cases for the skill and agent
 ├── .github/workflows/        # CI running the verification layers
-├── .claude-plugin/           # Claude Code plugin + marketplace manifests
-├── skills/bioc-pkg-dev/SKILL.md
-└── agents/bioc-package-review.md
+└── .claude-plugin/           # Claude Code plugin + marketplace manifests
 ```
+
+`skills/bioc-pkg-dev/` is a **mirror**. It is byte-identical to the same directory in
+[bioconductor/ai-agent-skills](https://github.com/Bioconductor/ai-agent-skills), which is why
+`knowledge/` sits inside it rather than at the repository root. Do not edit anything under it to
+satisfy a local check - change it upstream and sync the change back, or teach the check about the
+layout. `AGENTS.md` and `agents/bioc-package-review.md` are this repository's own and are free to
+diverge.
 
 There is deliberately no templates directory and no check script. Bioconductor already
 maintains both - `biocthis` for scaffolding, `BiocCheck` for validation - and reusing existing
@@ -80,13 +88,13 @@ claude --plugin-dir /path/to/bioc_package_dev
 ### Codex / Cursor / Gemini CLI / GitHub Copilot (AGENTS.md)
 
 These tools read `AGENTS.md` natively. Either work inside a clone of this repo, or copy
-`AGENTS.md` and the `knowledge/` directory into your package project. Gemini CLI also reads
+`AGENTS.md` and the `skills/bioc-pkg-dev/knowledge/` directory into your package project. Gemini CLI also reads
 `GEMINI.md` (which imports `AGENTS.md`).
 
 ### Any tool, or a human (manual)
 
-Read `knowledge/index.md` to find the topic, or `knowledge/workflow.md` for the full submission
-path. Point any assistant at the `knowledge/` directory.
+Read `skills/bioc-pkg-dev/knowledge/index.md` to find the topic, or `skills/bioc-pkg-dev/knowledge/workflow.md` for the full submission
+path. Point any assistant at the `skills/bioc-pkg-dev/knowledge/` directory.
 
 ## Example prompts
 
@@ -120,7 +128,7 @@ demand.
 ## Keeping it current
 
 The summaries are stamped with the date they were generated from the live guide, and
-`knowledge/SOURCES.md` pins the exact upstream `pkgrevdocs` commit they came from. Bioconductor
+`skills/bioc-pkg-dev/knowledge/SOURCES.md` pins the exact upstream `pkgrevdocs` commit they came from. Bioconductor
 updates the guide roughly twice a year with each release. Follow `docs/REFRESH.md`: diff the
 current upstream commit against the pinned one, regenerate only the changed chapters, bump
 `version` in `.claude-plugin/plugin.json`, and push. Marketplace users then run
@@ -128,8 +136,10 @@ current upstream commit against the pinned one, regenerate only the changed chap
 link back to the canonical chapter, which is the authority if anything drifts.
 
 Five upstreams are tracked, not just the guide: `pkgrevdocs`, the Contributions issue template,
-BiocCheck, biocthis, and bioc-actions. All five pins live in `knowledge/SOURCES.md`, and the
-weekly `fidelity` CI job opens an issue when any of them moves.
+BiocCheck, biocthis, and bioc-actions. Four of the pins live in
+`skills/bioc-pkg-dev/knowledge/SOURCES.md`; the bioc-actions pin lives in `docs/REFRESH.md`,
+because it is this repository's CI dependency and `SOURCES.md` is mirrored from upstream, which
+has no stake in our workflow. The weekly `fidelity` CI job opens an issue when any of them moves.
 
 ## How this is verified
 
@@ -166,7 +176,7 @@ competing copy of it.
   Daniela Cassol, Johannes Rainer, Lori Shepherd, Marcel Ramos Pérez, Martin Morgan.
   https://contributions.bioconductor.org, source
   [Bioconductor/pkgrevdocs](https://github.com/Bioconductor/pkgrevdocs). Every file under
-  `knowledge/` is derived from it, cites the chapter it came from, and defers to it on any
+  `skills/bioc-pkg-dev/knowledge/` is derived from it, cites the chapter it came from, and defers to it on any
   disagreement.
 - **[BiocCheck](https://github.com/Bioconductor/BiocCheck)** - Lori Shepherd, Marcel Ramos, and
   the Bioconductor core team. The authoritative validator. This repo runs it and reads its output

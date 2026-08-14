@@ -27,6 +27,17 @@ from dataclasses import dataclass, field
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# The skill bundle mirrored byte for byte from bioconductor/ai-agent-skills. knowledge/ lives
+# inside it, not at the repository root, because that is where upstream keeps it - prose inside
+# the bundle writes `knowledge/...` and means this. Nothing in here may be edited to satisfy a
+# local check: the check gets taught the layout, or the change goes upstream and comes back.
+MIRRORED_SKILL = "skills/bioc-pkg-dev"
+KNOWLEDGE = MIRRORED_SKILL + "/knowledge"
+
+# Where this repository records the CI action versions it pins. Repo-native on purpose: the
+# bundle mirrors upstream, which has no stake in our workflow.
+CI_PINS = "docs/REFRESH.md"
+
 # Files that restate the pre-submission gate. Kept in sync deliberately (an agent needs the gate
 # in context nearly every turn, so it is duplicated rather than referenced), which is exactly why
 # it has to be checked.
@@ -34,31 +45,36 @@ GATE_FILES = [
     "AGENTS.md",
     "skills/bioc-pkg-dev/SKILL.md",
     "agents/bioc-package-review.md",
-    "knowledge/workflow.md",
+    KNOWLEDGE + "/workflow.md",
 ]
 
-# The three router files that carry the identical BiocCheck/biocthis tooling block.
+# Files carrying the identical BiocCheck/biocthis tooling block. SKILL.md is deliberately not
+# one of them any more: it mirrors upstream, whose layout has no "## Tooling" section, so
+# requiring one here would force the two copies apart again. AGENTS.md and the review agent are
+# repo-native and still have to agree.
 ROUTER_FILES = [
     "AGENTS.md",
-    "skills/bioc-pkg-dev/SKILL.md",
     "agents/bioc-package-review.md",
 ]
 
-# Sections that must be byte-identical between AGENTS.md and SKILL.md. The two files reached
-# different shapes on purpose - AGENTS.md is a router, SKILL.md is a numbered workflow matching
-# the layout bioconductor/ai-agent-skills requires - so the headings no longer line up and the
-# pairing has to be stated rather than inferred.
-SHARED_SECTIONS = [
-    ("## Pre-submission gate", "### 3. Check the package against the gate, in two tiers"),
-    ("## Version rule", "### 9. Version rule"),
-    (
-        "## Bioconductor code style (differs from tidyverse)",
-        "### 7. Do the style pass last, and keep it a style pass",
-    ),
+# Sections AGENTS.md must keep. It is the cross-tool router and now the only file that routes.
+#
+# The byte-identical AGENTS.md/SKILL.md comparison that used to live here is gone. SKILL.md is a
+# verbatim mirror of upstream, which states the same rules in its own words and links into
+# knowledge/ relative to the skill directory rather than the repository root - byte-equality is
+# unachievable by construction, not merely unmet, so a check demanding it would only ever be
+# noise. The substantive half moved to GATE_VALUES, which every gate-restating file satisfies.
+ROUTER_SECTIONS = [
+    "## Pre-submission gate",
+    "## Version rule",
+    "## Bioconductor code style (differs from tidyverse)",
 ]
 
-# The five hard numbers of the gate. Every file restating the gate must carry all of them.
-GATE_VALUES = ["0.99.0", "10 MB", "10 min", "5 MB", "8 GB"]
+# The hard numbers of the gate. Every file restating the gate must carry all of them. "80%" is
+# here because it is the gate item a package fails while looking fine: BiocCheck errors below
+# 80% runnable examples, so a file restating the gate without it calls a package submittable
+# when BiocCheck will not.
+GATE_VALUES = ["0.99.0", "10 MB", "10 min", "5 MB", "8 GB", "80%"]
 
 # Tools this repo used to reimplement and must never reference again.
 DEAD_REFERENCES = ["check-submission.R", "context/REFRESH.md"]
@@ -122,7 +138,8 @@ def shipped_markdown() -> list[str]:
 def knowledge_files() -> list[str]:
     return [
         p for p in tracked_files()
-        if p.startswith("knowledge/") and p.endswith(".md") and p != "knowledge/SOURCES.md"
+        if p.startswith(KNOWLEDGE + "/") and p.endswith(".md")
+        and p != KNOWLEDGE + "/SOURCES.md"
     ]
 
 
@@ -214,11 +231,19 @@ def check_frontmatter(res: Result) -> None:
         desc = meta.get("description", "")
         if len(desc) < 80:
             res.fail(f"{skill}: description is {len(desc)} chars - too thin to route on")
-        # The target user converts an existing package. If the description stops covering that
-        # vocabulary the skill silently stops firing for them while every other check passes.
-        for term in ("existing", "CRAN", "submission"):
-            if term.lower() not in desc.lower():
-                res.fail(f"{skill}: description never mentions {term!r} (conversion audience)")
+        # The target user converts an existing package, and this description is the only thing
+        # routing to the skill here - the plugin has no SKILLS.md index the way upstream does.
+        # Demoted from failure to warning when SKILL.md became a verbatim mirror: upstream owns
+        # the wording, and it can afford a terser description because its SKILLS.md entry carries
+        # the "when to use" bullets. The risk is real rather than theoretical, so it still gets
+        # said out loud, and evals/trigger-cran-move is what actually measures it.
+        missing = [t for t in ("existing", "CRAN", "submission") if t.lower() not in desc.lower()]
+        if missing:
+            res.warn(
+                f"{skill}: description never mentions {missing} - this is the conversion "
+                "audience's vocabulary and the description is the only router here. "
+                "Run evals/trigger-cran-move before trusting the skill still fires."
+            )
 
     agent = "agents/bioc-package-review.md"
     meta = frontmatter(agent)
@@ -261,14 +286,22 @@ def path_candidates(path: str, line: str) -> list[str]:
         if os.path.basename(token) in FOREIGN_BASENAMES:
             continue
         rooted = token.split("/", 1)[0] in REPO_PREFIXES
-        knowledge_ref = path.startswith("knowledge/") and token.endswith(".md")
+        knowledge_ref = path.startswith(KNOWLEDGE + "/") and token.endswith(".md")
         if rooted or knowledge_ref:
             out.append(token)
     return out
 
 
 def resolve(path: str, token: str, by_basename: dict[str, list[str]]) -> str | None:
-    for base in (ROOT, os.path.join(ROOT, os.path.dirname(path)), os.path.join(ROOT, "knowledge")):
+    # MIRRORED_SKILL is a base because prose inside the bundle says `knowledge/...` and means the
+    # bundle's own directory, not the repository root - upstream keeps knowledge/ beside SKILL.md.
+    bases = (
+        ROOT,
+        os.path.join(ROOT, os.path.dirname(path)),
+        os.path.join(ROOT, MIRRORED_SKILL),
+        os.path.join(ROOT, KNOWLEDGE),
+    )
+    for base in bases:
         if os.path.exists(os.path.join(base, token)):
             return os.path.relpath(os.path.join(base, token), ROOT)
     if "/" not in token:
@@ -369,7 +402,7 @@ def check_stamps(res: Result) -> None:
 def sources_rows() -> list[tuple[str, str, str]]:
     """(rmd, slug, target) rows of the chapter map in knowledge/SOURCES.md."""
     rows = []
-    for line in read("knowledge/SOURCES.md").splitlines():
+    for line in read(KNOWLEDGE + "/SOURCES.md").splitlines():
         if not line.startswith("| `") or line.startswith("| ---"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -383,7 +416,7 @@ def sources_rows() -> list[tuple[str, str, str]]:
 def check_sources_map(res: Result) -> None:
     rows = sources_rows()
     if not rows:
-        res.fail("knowledge/SOURCES.md: chapter map has no parseable rows")
+        res.fail(KNOWLEDGE + "/SOURCES.md: chapter map has no parseable rows")
         return
 
     mapped_slugs = {slug for _rmd, slug, _t in rows if slug != "-"}
@@ -392,13 +425,13 @@ def check_sources_map(res: Result) -> None:
     for _rmd, slug, target in rows:
         if slug == "-" or not target.startswith("`"):
             continue
-        target_path = os.path.join("knowledge", target.strip("`"))
+        target_path = os.path.join(KNOWLEDGE, target.strip("`"))
         if not os.path.exists(os.path.join(ROOT, target_path)):
-            res.fail(f"knowledge/SOURCES.md: maps {slug} to {target_path}, which does not exist")
+            res.fail(f"{KNOWLEDGE}/SOURCES.md: maps {slug} to {target_path}, does not exist")
             continue
         if slug not in SLUG_URL.findall(read(target_path)):
             res.fail(
-                f"knowledge/SOURCES.md: maps slug {slug!r} to {target_path}, "
+                f"{KNOWLEDGE}/SOURCES.md: maps slug {slug!r} to {target_path}, "
                 f"but that file never cites {slug}.html in its Source: footer"
             )
 
@@ -509,27 +542,32 @@ def check_no_emoji(res: Result) -> None:
 
 def check_single_source(res: Result) -> None:
     agents = read("AGENTS.md")
-    skill = read("skills/bioc-pkg-dev/SKILL.md")
 
-    for agents_heading, skill_heading in SHARED_SECTIONS:
-        a, s = section(agents, agents_heading), section(skill, skill_heading)
-        if a is None:
-            res.fail(f"AGENTS.md: missing shared section {agents_heading!r}")
-        if s is None:
-            res.fail(f"SKILL.md: missing shared section {skill_heading!r}")
-        if a is not None and s is not None and a != s:
-            res.fail(
-                f"AGENTS.md {agents_heading!r} and SKILL.md {skill_heading!r} differ - "
-                "these are duplicated deliberately and must stay byte-identical"
-            )
+    for heading in ROUTER_SECTIONS:
+        if section(agents, heading) is None:
+            res.fail(f"AGENTS.md: missing router section {heading!r}")
 
-    # The router is AGENTS.md's job. A parallel copy in SKILL.md is what drifts.
-    for lineno, line in enumerate(skill.splitlines(), 1):
-        if line.startswith("- ") and "knowledge/" in line:
+    # SKILL.md mirrors skills/bioc-pkg-dev in bioconductor/ai-agent-skills, so it has to keep the
+    # frontmatter that repository's CI requires. Losing a field here surfaces as a failed sync
+    # upstream rather than as a failure at home, which is the wrong place to find out.
+    meta = frontmatter(f"{MIRRORED_SKILL}/SKILL.md") or {}
+    for key in ("name", "description", "version", "category", "author"):
+        if not meta.get(key):
             res.fail(
-                f"SKILL.md:{lineno}: router-style bullet pointing into knowledge/ - "
-                "the router belongs in AGENTS.md only"
+                f"{MIRRORED_SKILL}/SKILL.md: frontmatter missing {key!r} - "
+                "bioconductor/ai-agent-skills rejects the skill without it"
             )
+    for banned in ("platforms", "triggers"):
+        if banned in meta:
+            res.fail(
+                f"{MIRRORED_SKILL}/SKILL.md: prohibited frontmatter field {banned!r} - "
+                "skills upstream are agent-agnostic"
+            )
+    if meta.get("name") != os.path.basename(MIRRORED_SKILL):
+        res.fail(
+            f"{MIRRORED_SKILL}/SKILL.md: frontmatter name {meta.get('name')!r} does not match "
+            "its directory - upstream requires the two to be identical"
+        )
 
 
 # --------------------------------------------------------------------------------------------
@@ -569,15 +607,17 @@ def check_workflow_pins(res: Result) -> None:
         if ref in ("main", "master", "devel", "HEAD"):
             res.fail(f"{WORKFLOW}: {action} is pinned to a branch ({ref}), not a tag")
 
-    pinned = re.search(r"bioc-actions.*?\|\s*`(v[\d.]+)`", read("knowledge/SOURCES.md"))
+    # The pin lives in docs/REFRESH.md, not in the bundle's SOURCES.md: it is this repository's
+    # CI dependency, and the bundle mirrors upstream, which has no CI of ours to pin.
+    pinned = re.search(r"bioc-actions.*?\|\s*`(v[\d.]+)`", read(CI_PINS))
     if not pinned:
-        res.fail("knowledge/SOURCES.md: no bioc-actions tag pin found")
+        res.fail(f"{CI_PINS}: no bioc-actions tag pin found")
         return
     used = set(re.findall(r"grimbough/bioc-actions/\S+@(\S+)", text))
     wrong = sorted(used - {pinned.group(1)})
     if wrong:
         res.fail(
-            f"{WORKFLOW} uses bioc-actions {wrong}, but knowledge/SOURCES.md pins "
+            f"{WORKFLOW} uses bioc-actions {wrong}, but {CI_PINS} pins "
             f"{pinned.group(1)} - bump both together or neither"
         )
 

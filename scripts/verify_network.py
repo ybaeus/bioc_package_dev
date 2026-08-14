@@ -115,19 +115,19 @@ CLAIMS: list[dict[str, str]] = [
     {
         "slug": "general",
         "quote": "individual files must be <= 5MB",
-        "file": "knowledge/development/general-dev.md",
+        "file": "skills/bioc-pkg-dev/knowledge/development/general-dev.md",
         "note": "the only size limit upstream states as a requirement",
     },
     {
         "slug": "general",
         "quote": "should occupy less than 10 MB on disk",
-        "file": "knowledge/development/general-dev.md",
+        "file": "skills/bioc-pkg-dev/knowledge/development/general-dev.md",
         "note": "source build size - a recommendation, not a blocker",
     },
     {
         "slug": "general",
         "quote": "should require less than 10 minutes to run R CMD check",
-        "file": "knowledge/development/general-dev.md",
+        "file": "skills/bioc-pkg-dev/knowledge/development/general-dev.md",
         "note": "check duration - a recommendation, not a blocker",
     },
     {
@@ -136,37 +136,37 @@ CLAIMS: list[dict[str, str]] = [
             "it is recommended that the vignettes, man page examples, and unit tests do not "
             "require more than 8 GB of memory"
         ),
-        "file": "knowledge/development/general-dev.md",
+        "file": "skills/bioc-pkg-dev/knowledge/development/general-dev.md",
         "note": "memory ceiling - explicitly a recommendation",
     },
     {
         "slug": "versionnum",
         "quote": "should set version: 0.99.0 in the description file",
-        "file": "knowledge/maintenance.md",
+        "file": "skills/bioc-pkg-dev/knowledge/maintenance.md",
         "note": "the version every new submission starts at",
     },
     {
         "slug": "bioconductor-package-submissions",
         "quote": "the default branch must contain only package code",
-        "file": "knowledge/01-submissions.md",
+        "file": "skills/bioc-pkg-dev/knowledge/01-submissions.md",
         "note": "a requirement",
     },
     {
         "slug": "bioconductor-package-submissions",
         "quote": "should be in a different branch",
-        "file": "knowledge/01-submissions.md",
+        "file": "skills/bioc-pkg-dev/knowledge/01-submissions.md",
         "note": "CI helper files - a recommendation, and previously over-hardened here",
     },
     {
         "slug": "bioconductor-package-submissions",
         "quote": "a package can only be submitted to one or the other",
-        "file": "knowledge/01-submissions.md",
+        "file": "skills/bioc-pkg-dev/knowledge/01-submissions.md",
         "note": "CRAN and Bioconductor are mutually exclusive",
     },
     {
         "slug": "bioconductor-package-submissions",
         "quote": "to submit a package to bioconductor the package should",
-        "file": "knowledge/01-submissions.md",
+        "file": "skills/bioc-pkg-dev/knowledge/01-submissions.md",
         "note": "the eligibility list is stated as should, not must",
     },
 ]
@@ -193,7 +193,7 @@ TRACKER_QUOTES = [
 
 def pins() -> dict[str, str]:
     out: dict[str, str] = {}
-    for line in read("knowledge/SOURCES.md").splitlines():
+    for line in read("skills/bioc-pkg-dev/knowledge/SOURCES.md").splitlines():
         if not line.startswith("| ["):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -226,7 +226,7 @@ def pins() -> dict[str, str]:
 def mapped_slugs() -> dict[str, str]:
     """slug -> knowledge file (or a 'not summarized' note), from the SOURCES.md chapter map."""
     out = {}
-    for line in read("knowledge/SOURCES.md").splitlines():
+    for line in read("skills/bioc-pkg-dev/knowledge/SOURCES.md").splitlines():
         if not line.startswith("| `"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -241,7 +241,7 @@ def mapped_slugs() -> dict[str, str]:
 
 def rmd_to_slugs() -> dict[str, list[str]]:
     out: dict[str, list[str]] = {}
-    for line in read("knowledge/SOURCES.md").splitlines():
+    for line in read("skills/bioc-pkg-dev/knowledge/SOURCES.md").splitlines():
         if not line.startswith("| `"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -260,7 +260,7 @@ def check_commit_drift(res) -> None:
     """pkgrevdocs has moved: report which summaries the changed chapters map to."""
     pinned = pins().get("pkgrevdocs")
     if not pinned:
-        res.fail("knowledge/SOURCES.md: no pkgrevdocs commit pin found")
+        res.fail("skills/bioc-pkg-dev/knowledge/SOURCES.md: no pkgrevdocs commit pin found")
         return
     head = fetch_json("https://api.github.com/repos/Bioconductor/pkgrevdocs/commits/devel")
     current = head["sha"]  # type: ignore[index]
@@ -422,7 +422,7 @@ def check_bioc_cycle(res) -> None:
         "AGENTS.md",
         "skills/bioc-pkg-dev/SKILL.md",
         "agents/bioc-package-review.md",
-        "knowledge/SOURCES.md",
+        "skills/bioc-pkg-dev/knowledge/SOURCES.md",
     ):
         if normalize(expected) not in normalize(read(path)):
             res.fail(

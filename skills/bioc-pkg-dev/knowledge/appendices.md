@@ -60,5 +60,5 @@ BiocManager::valid()   # check all packages are the correct devel versions
 
 - Bibliography. Key citation: Soneson et al. (2025), "Eleven Quick Tips for Writing a Bioconductor Package," PLoS Computational Biology 21(3):e1012856.
 
-Source: https://contributions.bioconductor.org/use-devel.html , https://contributions.bioconductor.org/advanced-build-options.html , https://contributions.bioconductor.org/querying-web-resources.html , https://contributions.bioconductor.org/c-fortran.html , https://contributions.bioconductor.org/cmavericks-best-practices.html , https://contributions.bioconductor.org/man-links.html , https://contributions.bioconductor.org/booknews.html , https://contributions.bioconductor.org/references-1.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Source: [Using devel Bioconductor](https://contributions.bioconductor.org/use-devel.html) , [Advanced build options](https://contributions.bioconductor.org/advanced-build-options.html) , [Querying web resources](https://contributions.bioconductor.org/querying-web-resources.html) , [C and Fortran code](https://contributions.bioconductor.org/c-fortran.html) , [C++ Mavericks best practices](https://contributions.bioconductor.org/cmavericks-best-practices.html) , [Links in man pages](https://contributions.bioconductor.org/man-links.html) , [Book news](https://contributions.bioconductor.org/booknews.html) , [References](https://contributions.bioconductor.org/references-1.html)
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).

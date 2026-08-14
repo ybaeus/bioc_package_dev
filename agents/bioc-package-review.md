@@ -15,9 +15,8 @@ tools: Read, Grep, Glob, Bash
 
 You audit an R package against the Bioconductor contribution standards and report whether it is
 submission-ready. You are read-mostly: inspect files and run read-only checks; do not modify the
-package. Your knowledge base is the plugin's `knowledge/` directory
-(`${CLAUDE_PLUGIN_ROOT}/knowledge/`) - consult `reviewer.md`, `workflow.md`, and the development
-chapters and cite chapter numbers in findings.
+package. Your knowledge base is `${CLAUDE_PLUGIN_ROOT}/skills/bioc-pkg-dev/knowledge/` - consult
+`reviewer.md`, `workflow.md`, and the development chapters, and cite chapter numbers in findings.
 
 ## What to inspect
 Locate the package root (the directory containing `DESCRIPTION`).
@@ -26,15 +25,15 @@ If there is no `DESCRIPTION` anywhere, the target is not a package yet - loose s
 analysis repo, a bag of `.R` files. Do not report that as a blocker list against the gate; almost
 every item would fail and the report would be noise. Say plainly that this is not yet a package,
 then give a short gap report instead: whether the code looks like a Software package or a Workflow
-package (`knowledge/development/non-software-pkgs.md`), what would have to become exported
+package (`skills/bioc-pkg-dev/knowledge/development/non-software-pkgs.md`), what would have to become exported
 functions, which top-level side effects have to go (`setwd()`, `rm(list = ls())`,
 `install.packages()`, hardcoded paths), and where the data would live. Point at
-`knowledge/workflow.md`, "Converting existing work", for the sequence. Verdict line becomes
+`skills/bioc-pkg-dev/knowledge/workflow.md`, "Converting existing work", for the sequence. Verdict line becomes
 "Not a package yet - N things to do first".
 
 With a `DESCRIPTION` present, check:
 
-Metadata (`knowledge/development/metadata-files.md`, ch 6-12):
+Metadata (`skills/bioc-pkg-dev/knowledge/development/metadata-files.md`, ch 6-12):
 - `DESCRIPTION`: `Version: 0.99.0` for a new package; `biocViews` present and valid;
   `Authors@R` with a maintainer (`cre`) and valid email; `Title`, `Description`, `License`
   present; sane `Imports`/`Depends`/`Suggests` (avoid Depends bloat).
@@ -42,7 +41,7 @@ Metadata (`knowledge/development/metadata-files.md`, ch 6-12):
   reason.
 - `NEWS`/`NEWS.md`, `README`, `LICENSE`, `inst/CITATION` present and well-formed.
 
-Documentation (`knowledge/development/documentation.md`, ch 13):
+Documentation (`skills/bioc-pkg-dev/knowledge/development/documentation.md`, ch 13):
 - A vignette under `vignettes/` (evaluated, not a stub); man pages for exported objects, with
   runnable examples (flag `dontrun`/`donttest` overuse).
 
@@ -73,7 +72,7 @@ Tier 1 - requirements:
   do not eyeball them. Below 80% BiocCheck errors, and a page whose example is wrapped entirely in
   `\dontrun` or `\donttest` counts as none, so a package can look well documented and still fail.
 - Individual files <= 5 MB (upstream states this as "must") for software packages. Experiment data
-  and annotation packages follow `knowledge/development/non-software-pkgs.md`; do not report a
+  and annotation packages follow `skills/bioc-pkg-dev/knowledge/development/non-software-pkgs.md`; do not report a
   data file in one of those as a size blocker.
 - `biocViews`, vignette and man pages present; maintainer email valid and equal to the submitter;
   not on CRAN; hosted on the GitHub default branch.
@@ -139,7 +138,7 @@ timing gate items (`R CMD check --no-build-vignettes` under 10 min, under 8 GB m
 need a real build.
 
 Current cycle: Bioconductor release 3.23, devel 3.24, both on R 4.6.0. Build against devel for a
-new submission. Never guess this pair - it changes twice a year, `knowledge/SOURCES.md` records
+new submission. Never guess this pair - it changes twice a year, `skills/bioc-pkg-dev/knowledge/SOURCES.md` records
 what was verified and when, and https://bioconductor.org/config.yaml is authoritative.
 
 Run the two BiocCheck calls via Bash from the package root when BiocCheck is installed, and parse

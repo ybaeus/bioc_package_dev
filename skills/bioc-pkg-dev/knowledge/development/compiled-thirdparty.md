@@ -3,6 +3,7 @@ Covers: Chapter 17 - Code other than R (compiled and third-party)
 # Compiled Code and Third-Party Code
 
 ## General rules
+
 - Compiled code must follow the "System and foreign language interfaces"
   section of the Writing R Extensions (R-exts) manual.
 - Use `Makevars`/`Makefile` sparingly; they are often unnecessary. See the
@@ -12,6 +13,7 @@ Covers: Chapter 17 - Code other than R (compiled and third-party)
 - Place compiled sources in `src/`.
 
 ## Language-specific guidance
+
 - C++: use Rcpp for cross-platform C++ integration (see the Rcpp Gallery).
 - Fortran: consider dotCall64 for modern Fortran integration.
 - Python: use basilisk to configure Python environments automatically so users
@@ -19,6 +21,7 @@ Covers: Chapter 17 - Code other than R (compiled and third-party)
 - CMake-based builds: use the biocmake package.
 
 ## Third-party code responsibilities
+
 - Do not bundle external libraries that duplicate functionality already
   provided by supported R/Bioconductor packages.
 - Maintainers take full responsibility for any bundled third-party code:
@@ -28,5 +31,5 @@ Covers: Chapter 17 - Code other than R (compiled and third-party)
 - Ensure the license of any bundled third-party code is compatible with, and
   redistributable under, the package license.
 
-Source: https://contributions.bioconductor.org/other-than-Rcode.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Source: [Code other than R](https://contributions.bioconductor.org/other-than-Rcode.html)
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).
