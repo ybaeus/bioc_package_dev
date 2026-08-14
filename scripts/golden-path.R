@@ -122,17 +122,19 @@ writeLines(desc, desc_path)
 ## vignette calls citation(), and so R CMD build fails at "creating vignettes". A real user has
 ## to fill this file in anyway - the DOI in it is the literal string 10.1101/TODO - so doing the
 ## minimum here is modelling the user, not papering over the bug.
-say("filling in the CITATION title that use_bioc_citation() leaves empty")
+say("filling in the CITATION fields that use_bioc_citation() leaves empty")
 cit_path <- file.path(outdir, "inst", "CITATION")
 cit <- readLines(cit_path)
-if (!any(grepl('title = ""', cit, fixed = TRUE))) {
+holes <- c('title = ""', 'as.person("")')
+if (!any(vapply(holes, function(h) any(grepl(h, cit, fixed = TRUE)), logical(1)))) {
     warning(
-        "inst/CITATION no longer has an empty title - biocthis may have fixed this. ",
+        "inst/CITATION has no empty title or author - biocthis may have fixed this. ",
         "Re-check before keeping this workaround.",
         call. = FALSE
     )
 }
 cit <- sub('title = ""', paste0('title = "', pkg, ': a golden-path fixture"'), cit, fixed = TRUE)
+cit <- sub('as.person("")', 'as.person("Golden Path")', cit, fixed = TRUE)
 writeLines(cit, cit_path)
 
 say("roxygenise (man pages for exported objects)")
