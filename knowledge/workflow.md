@@ -48,15 +48,21 @@ rewrite, so check it early even though it is fixed late.
 Author against the development chapters, then clear every item below. Detail:
 `development/build-check-bioccheck.md`, `development/general-dev.md`, `development/metadata-files.md`.
 
-Hard gate (all required):
-- `Version: 0.99.0` in DESCRIPTION. See `maintenance.md` (version rule) and metadata-files.
-- `biocViews` field present and valid; a vignette; man pages for exported objects.
-- Valid maintainer email; maintainer == the person who will submit.
+Tier 1 - stated as requirements:
 - `R CMD check` clean on current R-devel (no errors, no warnings).
 - `BiocCheck::BiocCheckGitClone()` clean.
-- `BiocCheck::BiocCheck('new-package' = TRUE)` clean (no errors, no warnings).
-- Source build < 10 MB (`R CMD build`); `R CMD check --no-build-vignettes` < 10 min.
-- Every individual file <= 5 MB; running vignettes/examples/tests uses < 8 GB memory.
+- `BiocCheck::BiocCheck('new-package' = TRUE)` clean (no errors, no warnings). The tracker calls
+  passing check and BiocCheck "a minimum requirement for package acceptance", and notes that
+  passing "does not result in automatic acceptance" - review still follows.
+- Every individual file <= 5 MB (upstream: "must be").
+- `biocViews` field present and valid; a vignette; man pages for exported objects.
+- Valid maintainer email; maintainer == the person who will submit.
+
+Tier 2 - stated as should or recommended. Expected in practice and a reviewer will ask, but a
+miss here is not a blocker:
+- `Version: 0.99.0` in DESCRIPTION. See `maintenance.md` (version rule) and metadata-files.
+- Source build under 10 MB (`R CMD build`); `R CMD check --no-build-vignettes` under 10 min.
+- Running vignettes/examples/tests uses under 8 GB memory.
 - Bioc code style in R code: `<-`, 4-space indent, 80-col. See `development/r-code.md`.
 
 Use the current devel Bioconductor with the matching R version - see `appendices.md` (Appendix A)

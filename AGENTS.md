@@ -22,14 +22,27 @@ not say "Bioconductor" explicitly but the package clearly targets it.
 - What reviewers check: `knowledge/reviewer.md`
 - Appendices (devel Bioc, build options, C/Fortran, etc.): `knowledge/appendices.md`
 
-## Pre-submission gate (hard requirements for a new package)
-Do not tell a user their package is submission-ready unless all hold:
-- `R CMD check` clean on current R-devel (no errors, no warnings).
-- `BiocCheck::BiocCheckGitClone()` and `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
-- Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; individual files <= 5 MB;
-  < 8 GB memory for vignettes/examples/tests.
-- `Version: 0.99.0`; `biocViews` present; a vignette and man pages present; valid maintainer
-  email; not on CRAN; hosted on the GitHub default branch.
+## Pre-submission gate
+Two tiers, because upstream states them at two different strengths. Do not report a tier-2 item
+as a blocker; report it as something a reviewer will very likely ask about.
+
+Tier 1 - stated as requirements:
+- `R CMD check` and `BiocCheck` pass with no ERROR and no WARNING on current R-devel. This is the
+  tracker's own wording: "a minimum requirement for package acceptance". It also says "Passing
+  these checks does not result in automatic acceptance" - a human review follows.
+- Run both entry points: `BiocCheck::BiocCheckGitClone()` and
+  `BiocCheck::BiocCheck('new-package' = TRUE)`.
+- Individual files must be <= 5 MB. Upstream states this one as "must".
+- `biocViews` present; a vignette and man pages present; maintainer email valid and belonging to
+  the person submitting; not on CRAN ("a package can only be submitted to one or the other");
+  hosted on the GitHub default branch. BiocCheck catches most of these.
+
+Tier 2 - stated as should or recommended:
+- `Version: 0.99.0` for a new package (upstream: "should set"). Expected in practice; set it.
+- Source build under 10 MB (upstream: "should occupy less than").
+- `R CMD check --no-build-vignettes` under 10 min (upstream: "should require less than").
+- Vignettes, examples and tests under 8 GB memory (upstream: "it is recommended that").
+
 Detail: `knowledge/development/build-check-bioccheck.md` and `knowledge/development/general-dev.md`.
 
 ## Version rule

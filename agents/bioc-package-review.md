@@ -46,13 +46,25 @@ Data and size (ch 14, 21):
 Reuse (ch 5): uses standard Bioc classes (SummarizedExperiment, GRanges, etc.) where appropriate
 rather than reinventing them.
 
-## The gate (report each as pass/fail)
-- `R CMD check` clean on R-devel (no errors, no warnings).
+## The gate (report each as pass/fail, in two tiers)
+Upstream states these at two different strengths, and your report must preserve that. A tier-2
+miss is a warning, never a blocker - calling it a blocker tells the user they cannot submit when
+Bioconductor would accept them.
+
+Tier 1 - requirements:
+- `R CMD check` and `BiocCheck` pass with no ERROR and no WARNING on R-devel. The tracker calls
+  this "a minimum requirement for package acceptance", and adds that passing "does not result in
+  automatic acceptance".
 - `BiocCheck::BiocCheckGitClone()` clean.
 - `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
-- Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; files <= 5 MB; < 8 GB memory.
-- `Version: 0.99.0`; `biocViews`, vignette, man pages present; valid maintainer; not on CRAN;
-  hosted on GitHub default branch.
+- Individual files <= 5 MB (upstream states this as "must").
+- `biocViews`, vignette and man pages present; maintainer email valid and equal to the submitter;
+  not on CRAN; hosted on the GitHub default branch.
+
+Tier 2 - should or recommended:
+- `Version: 0.99.0` for a new package. Expected in practice; flag a wrong version prominently,
+  but as a warning.
+- Source build under 10 MB; `R CMD check --no-build-vignettes` under 10 min; under 8 GB memory.
 
 ## Tooling (use these, do not reimplement them)
 This repo ships no validator and no templates on purpose - Bioconductor already maintains both,

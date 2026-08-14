@@ -43,13 +43,21 @@ Appendices:
   Rd links, NEWS, references: `appendices.md` (A-H)
 
 ## The gate (memorize)
-See `workflow.md` and `development/build-check-bioccheck.md` for detail. A new package must:
+See `workflow.md` and `development/build-check-bioccheck.md` for detail, including which items are
+requirements and which are recommendations - the distinction matters when telling someone whether
+they can submit.
+
+Requirements:
 - Pass `R CMD check` clean on current R-devel (no errors, no warnings).
-- Pass `BiocCheck::BiocCheckGitClone()` and `BiocCheck::BiocCheck('new-package'=TRUE)` clean.
-- Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; individual files <= 5 MB;
-  < 8 GB memory to run vignettes/examples/tests.
-- Set `Version: 0.99.0`; include `biocViews`, a vignette, and man pages; valid maintainer email;
+- Pass `BiocCheck::BiocCheckGitClone()` and `BiocCheck::BiocCheck('new-package' = TRUE)` clean.
+- Individual files <= 5 MB.
+- Include `biocViews`, a vignette, and man pages; valid maintainer email equal to the submitter;
   not already on CRAN; hosted on the GitHub default branch.
 
+Recommendations (expected in practice, but upstream says should/recommended):
+- Set `Version: 0.99.0`.
+- Source build < 10 MB; `R CMD check --no-build-vignettes` < 10 min; < 8 GB memory to run
+  vignettes/examples/tests.
+
 Source: https://contributions.bioconductor.org/index.html
-Fetched 2026-07-23 from contributions.bioconductor.org (Bioconductor devel guide).
+Fetched 2026-08-14 from contributions.bioconductor.org (Bioconductor devel guide).
