@@ -6,7 +6,7 @@ description: >-
   and it has to preserve the two tiers - a wrong version is a warning, a missing biocViews and a
   missing vignette are blockers. Encouraging vagueness here is the failure mode.
 tags: [agent, review, verdict]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 context:

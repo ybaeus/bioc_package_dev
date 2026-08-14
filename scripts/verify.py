@@ -32,7 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # it has to be checked.
 GATE_FILES = [
     "AGENTS.md",
-    "skills/bioconductor-package-dev/SKILL.md",
+    "skills/bioc-pkg-dev/SKILL.md",
     "agents/bioc-package-review.md",
     "knowledge/workflow.md",
 ]
@@ -40,15 +40,21 @@ GATE_FILES = [
 # The three router files that carry the identical BiocCheck/biocthis tooling block.
 ROUTER_FILES = [
     "AGENTS.md",
-    "skills/bioconductor-package-dev/SKILL.md",
+    "skills/bioc-pkg-dev/SKILL.md",
     "agents/bioc-package-review.md",
 ]
 
-# Sections that must be byte-identical between AGENTS.md and SKILL.md.
+# Sections that must be byte-identical between AGENTS.md and SKILL.md. The two files reached
+# different shapes on purpose - AGENTS.md is a router, SKILL.md is a numbered workflow matching
+# the layout bioconductor/ai-agent-skills requires - so the headings no longer line up and the
+# pairing has to be stated rather than inferred.
 SHARED_SECTIONS = [
-    "## Pre-submission gate",
-    "## Version rule",
-    "## Bioconductor code style (differs from tidyverse)",
+    ("## Pre-submission gate", "### 3. Check the package against the gate, in two tiers"),
+    ("## Version rule", "### 9. Version rule"),
+    (
+        "## Bioconductor code style (differs from tidyverse)",
+        "### 7. Do the style pass last, and keep it a style pass",
+    ),
 ]
 
 # The five hard numbers of the gate. Every file restating the gate must carry all of them.
@@ -121,15 +127,21 @@ def knowledge_files() -> list[str]:
 
 
 def section(text: str, heading: str) -> str | None:
-    """Return the body of a `## heading` section, up to the next heading of the same level."""
+    """Return a section body, up to the next heading of the same level or higher.
+
+    Handles `##` and `###`: a `### 3. ...` step must end at `### 4. ...`, not run on to the
+    next `##`, or every comparison against it silently includes the steps that follow.
+    """
     lines = text.splitlines()
     try:
         start = lines.index(heading)
     except ValueError:
         return None
+    depth = len(heading) - len(heading.lstrip("#"))
     body = []
     for line in lines[start + 1:]:
-        if line.startswith("## "):
+        stripped = len(line) - len(line.lstrip("#"))
+        if 0 < stripped <= depth and line[stripped:stripped + 1] == " ":
             break
         body.append(line)
     return "\n".join(body).strip("\n")
@@ -192,12 +204,12 @@ def frontmatter(path: str) -> dict[str, str]:
 
 
 def check_frontmatter(res: Result) -> None:
-    skill = "skills/bioconductor-package-dev/SKILL.md"
+    skill = "skills/bioc-pkg-dev/SKILL.md"
     meta = frontmatter(skill)
     if not meta:
         res.fail(f"{skill}: no YAML frontmatter")
     else:
-        if meta.get("name") != "bioconductor-package-dev":
+        if meta.get("name") != "bioc-pkg-dev":
             res.fail(f"{skill}: frontmatter name {meta.get('name')!r} != directory name")
         desc = meta.get("description", "")
         if len(desc) < 80:
@@ -497,17 +509,17 @@ def check_no_emoji(res: Result) -> None:
 
 def check_single_source(res: Result) -> None:
     agents = read("AGENTS.md")
-    skill = read("skills/bioconductor-package-dev/SKILL.md")
+    skill = read("skills/bioc-pkg-dev/SKILL.md")
 
-    for heading in SHARED_SECTIONS:
-        a, s = section(agents, heading), section(skill, heading)
+    for agents_heading, skill_heading in SHARED_SECTIONS:
+        a, s = section(agents, agents_heading), section(skill, skill_heading)
         if a is None:
-            res.fail(f"AGENTS.md: missing shared section {heading!r}")
+            res.fail(f"AGENTS.md: missing shared section {agents_heading!r}")
         if s is None:
-            res.fail(f"SKILL.md: missing shared section {heading!r}")
+            res.fail(f"SKILL.md: missing shared section {skill_heading!r}")
         if a is not None and s is not None and a != s:
             res.fail(
-                f"section {heading!r} differs between AGENTS.md and SKILL.md - "
+                f"AGENTS.md {agents_heading!r} and SKILL.md {skill_heading!r} differ - "
                 "these are duplicated deliberately and must stay byte-identical"
             )
 

@@ -6,7 +6,7 @@ description: >-
   the three and does not invent a fourth is the pass condition. The fixture is built with shell
   only - no R, no biocthis - so this case runs anywhere and cannot fail for an unrelated reason.
 tags: [agent, review]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 context:

@@ -73,7 +73,7 @@ Re-run the summary pass for the affected files only. Format rules that must hold
   newer than its stamp, so an edited-but-unstamped file is caught.
 
 If the gate numbers, the version rule, or the submission mechanics changed, also update the inline
-copies in `AGENTS.md`, `skills/bioconductor-package-dev/SKILL.md` and
+copies in `AGENTS.md`, `skills/bioc-pkg-dev/SKILL.md` and
 `agents/bioc-package-review.md`. These repeat the gate deliberately, and `verify.py` requires the
 copies to stay identical.
 
@@ -164,7 +164,7 @@ Run in this order; each is cheaper than the next and catches different failures.
 - Bump `version` in `.claude-plugin/plugin.json`. Plugin users only receive updates on a bump.
 - Note the change in the commit message.
 - Commit and push to `github.com/ybaeus/bioc_package_dev`. Marketplace users then run
-  `/plugin marketplace update` followed by `/plugin update bioconductor-package-dev`.
+  `/plugin marketplace update` followed by `/plugin update bioc-pkg-dev`.
 
 ## Notes
 

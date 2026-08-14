@@ -5,7 +5,7 @@ description: >-
   field. AGENTS.md and the skill description both claim to fire when the package clearly targets
   Bioconductor without the user saying so; this is what tests that claim.
 tags: [trigger, implicit]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 3
 
 execution:

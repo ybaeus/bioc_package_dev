@@ -5,7 +5,7 @@ description: >-
   four-space indent, and seq_len/seq_along instead of 1:n. The 1:n habit is not cosmetic - it
   iterates backwards when the length is zero - and BiocCheck flags it.
 tags: [style]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 execution:

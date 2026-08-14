@@ -5,7 +5,7 @@ description: >-
   other". Answering this one wrong sends someone down a path that ends in a rejected submission,
   so the answer has to be unambiguous rather than encouraging.
 tags: [trigger, conversion, facts]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 execution:

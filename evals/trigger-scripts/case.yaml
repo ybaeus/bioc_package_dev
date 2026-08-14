@@ -6,7 +6,7 @@ description: >-
   is the wrong one - so an answer that treats scripts like a package is a failure even if every
   fact in it is true.
 tags: [trigger, conversion, scripts]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 3
 
 context:

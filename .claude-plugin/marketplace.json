@@ -7,7 +7,7 @@
   },
   "plugins": [
     {
-      "name": "bioconductor-package-dev",
+      "name": "bioc-pkg-dev",
       "source": "./",
       "description": "Guidance and review for developing, maintaining, submitting, and reviewing Bioconductor R packages."
     }

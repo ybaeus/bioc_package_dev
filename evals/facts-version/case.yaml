@@ -5,7 +5,7 @@ description: >-
   package's existing version) costs a review cycle. Also checks the answer explains the devel or
   release parity rule rather than just emitting a number.
 tags: [facts]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 execution:

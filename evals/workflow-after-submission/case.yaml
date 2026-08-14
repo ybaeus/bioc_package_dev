@@ -5,7 +5,7 @@ description: >-
   automated build fires first, a human reviewer comes later, and every fix needs a version bump
   to propagate. Tests that workflow.md is reachable and ordered, not just present.
 tags: [router, workflow]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 execution:

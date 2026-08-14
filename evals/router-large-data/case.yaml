@@ -5,7 +5,7 @@ description: >-
   has to leave the package and land on ExperimentHub or AnnotationHub. Answering "compress it"
   would be confidently useless.
 tags: [router, facts]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 2
 
 execution:

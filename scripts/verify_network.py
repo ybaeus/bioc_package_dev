@@ -178,11 +178,11 @@ TRACKER_TEMPLATE = (
 TRACKER_QUOTES = [
     (
         "a minimum requirement for package acceptance",
-        ["AGENTS.md", "skills/bioconductor-package-dev/SKILL.md"],
+        ["AGENTS.md", "skills/bioc-pkg-dev/SKILL.md"],
     ),
     (
         "does not result in automatic acceptance",
-        ["AGENTS.md", "skills/bioconductor-package-dev/SKILL.md"],
+        ["AGENTS.md", "skills/bioc-pkg-dev/SKILL.md"],
     ),
 ]
 
@@ -420,7 +420,7 @@ def check_bioc_cycle(res) -> None:
     )
     for path in (
         "AGENTS.md",
-        "skills/bioconductor-package-dev/SKILL.md",
+        "skills/bioc-pkg-dev/SKILL.md",
         "agents/bioc-package-review.md",
         "knowledge/SOURCES.md",
     ):

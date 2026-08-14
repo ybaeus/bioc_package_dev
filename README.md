@@ -5,7 +5,7 @@ Bioconductor R packages to the project's official standards. The knowledge is di
 coding assistant - or a human - can follow.
 
 It ships in two forms from one source of truth:
-- A Claude Code plugin: a skill (`bioconductor-package-dev`) plus a review agent
+- A Claude Code plugin: a skill (`bioc-pkg-dev`) plus a review agent
   (`bioc-package-review`).
 - A cross-tool `AGENTS.md` that Codex, Cursor, Gemini CLI, GitHub Copilot, and other assistants
   read natively.
@@ -33,7 +33,7 @@ bioc_package_dev/
 ├── evals/                    # behavioral test cases for the skill and agent
 ├── .github/workflows/        # CI running the verification layers
 ├── .claude-plugin/           # Claude Code plugin + marketplace manifests
-├── skills/bioconductor-package-dev/SKILL.md
+├── skills/bioc-pkg-dev/SKILL.md
 └── agents/bioc-package-review.md
 ```
 
@@ -64,11 +64,11 @@ One-command install from this repo's marketplace:
 
 ```
 /plugin marketplace add ybaeus/bioc_package_dev
-/plugin install bioconductor-package-dev
+/plugin install bioc-pkg-dev
 ```
 
 Then, in a package project, the skill triggers automatically on Bioconductor work, or invoke it
-with `/bioconductor-package-dev`. For a submission-readiness audit, ask Claude to "review my
+with `/bioc-pkg-dev`. For a submission-readiness audit, ask Claude to "review my
 package for Bioconductor submission" (runs the `bioc-package-review` agent).
 
 To try it before installing, clone this repo and run:
@@ -124,7 +124,7 @@ The summaries are stamped with the date they were generated from the live guide,
 updates the guide roughly twice a year with each release. Follow `docs/REFRESH.md`: diff the
 current upstream commit against the pinned one, regenerate only the changed chapters, bump
 `version` in `.claude-plugin/plugin.json`, and push. Marketplace users then run
-`/plugin marketplace update` and `/plugin update bioconductor-package-dev`. The summaries always
+`/plugin marketplace update` and `/plugin update bioc-pkg-dev`. The summaries always
 link back to the canonical chapter, which is the authority if anything drifts.
 
 Five upstreams are tracked, not just the guide: `pkgrevdocs`, the Contributions issue template,

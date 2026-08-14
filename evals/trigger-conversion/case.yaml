@@ -6,7 +6,7 @@ description: >-
   inert here while every static check still passes green, so this is the highest-value case in
   the suite.
 tags: [trigger, conversion]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 3
 
 execution:

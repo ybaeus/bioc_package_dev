@@ -5,7 +5,7 @@ description: >-
   broken as one that fires on nothing - it burns context and drags Bioconductor rules into
   answers where they do not apply. Three runs because false positives are intermittent.
 tags: [trigger, negative]
-plugins: [bioconductor-package-dev]
+plugins: [bioc-pkg-dev]
 runs: 3
 
 execution:

@@ -1,7 +1,7 @@
 {
-  "name": "bioconductor-package-dev",
+  "name": "bioc-pkg-dev",
   "description": "Guidance and review for developing, maintaining, submitting, and reviewing Bioconductor R packages, distilled from the official Bioconductor contributions guide.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "ybaeus"
   },
