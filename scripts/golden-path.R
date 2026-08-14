@@ -80,6 +80,33 @@ writeLines(
     file.path(outdir, "R", "countObserved.R")
 )
 
+## Unit tests, because the guide asks for them and BiocCheck says so out loud ("Consider adding
+## unit tests. We strongly encourage them."). A fixture that skips them is not modelling the
+## package we tell people to submit.
+dir.create(file.path(outdir, "tests", "testthat"), recursive = TRUE, showWarnings = FALSE)
+writeLines(
+    c(
+        'library(testthat)',
+        paste0('library(', pkg, ')'),
+        '',
+        paste0('test_check("', pkg, '")')
+    ),
+    file.path(outdir, "tests", "testthat.R")
+)
+writeLines(
+    c(
+        'test_that("countObserved counts non-missing values per column", {',
+        '    x <- data.frame(a = c(1, NA, 3), b = c(1, 2, 3))',
+        '    expect_identical(countObserved(x), c(a = 2L, b = 3L))',
+        '})',
+        '',
+        'test_that("countObserved rejects objects without two dimensions", {',
+        '    expect_error(countObserved(1:3))',
+        '})'
+    ),
+    file.path(outdir, "tests", "testthat", "test-countObserved.R")
+)
+
 ## ---------------------------------------------------------------------------------------
 ## The documented chain. Keep these calls identical to the block in AGENTS.md, SKILL.md and
 ## agents/bioc-package-review.md - verify.py check 8 fails the build if they drift apart.
@@ -152,7 +179,8 @@ expected <- c(
     "NEWS.md",
     "inst/CITATION",
     file.path("vignettes", paste0(pkg, ".Rmd")),
-    file.path("man", "countObserved.Rd")
+    file.path("man", "countObserved.Rd"),
+    file.path("tests", "testthat.R")
 )
 missing <- expected[!file.exists(file.path(outdir, expected))]
 if (length(missing) > 0L) {

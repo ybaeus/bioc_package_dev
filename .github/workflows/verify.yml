@@ -159,9 +159,14 @@ jobs:
       - uses: grimbough/bioc-actions/run-BiocCheck@v1.0.16
         with:
           package-directory: ${{ runner.temp }}/GoldenPathPkg
-          # Start at error. Tighten to warning once the baseline is known green - a scaffolded
-          # package legitimately trips some BiocCheck notes (no real vignette content yet).
           error-on: error
+          # --no-check-bioc-help skips the support-site registration and bioc-devel subscription
+          # checks. Those are ERRORs and they can never pass for a throwaway fixture: they test
+          # whether the maintainer email is registered with Bioconductor, and this package's
+          # maintainer is a usethis placeholder. Nothing else is disabled - the point is to find
+          # out whether the documented chain produces an acceptable package, so weakening the
+          # checks any further would defeat the exercise.
+          arguments: --no-check-bioc-help
 
       # BiocCheck exits with a bare status code, so without this a red build says only "exit
       # code 2" and reading the reason needs a token.
