@@ -85,6 +85,14 @@ writeLines(
 ## agents/bioc-package-review.md - verify.py check 8 fails the build if they drift apart.
 ## ---------------------------------------------------------------------------------------
 
+## use_bioc_description() goes through usethis::write_over(), which will not replace an existing
+## file without approval and declines silently when it cannot ask. create_package() has just
+## written a DESCRIPTION, so leaving it in place would make the next call a silent no-op and the
+## package would end up with no biocViews. Removing it is what "approve the overwrite" amounts
+## to. On a real existing package the honest advice is the opposite: add biocViews by hand rather
+## than let this discard your metadata.
+unlink(desc_path <- file.path(outdir, "DESCRIPTION"))
+
 say("biocthis::use_bioc_description()")
 biocthis::use_bioc_description(biocViews = "Software")
 
@@ -104,8 +112,7 @@ biocthis::use_bioc_github_action()
 ## The two things the guide requires that biocthis does not decide for you.
 ## ---------------------------------------------------------------------------------------
 
-say("setting Version: 0.99.0")
-desc_path <- file.path(outdir, "DESCRIPTION")
+say("confirming Version: 0.99.0")
 desc <- readLines(desc_path)
 desc[grepl("^Version:", desc)] <- "Version: 0.99.0"
 writeLines(desc, desc_path)

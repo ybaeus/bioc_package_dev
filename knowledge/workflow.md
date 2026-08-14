@@ -20,8 +20,10 @@ the problem is to discover late, not by how hard it is to fix.
 4. **Version** - reset to `0.99.0` no matter what the package is at today. A package at `2.4.1` on
    GitHub still submits as `0.99.0`. See `maintenance.md`.
 5. **Metadata gaps** - `biocViews` (usually missing entirely on a non-Bioc package), `Authors@R`
-   with a valid `cre` email, `NEWS.md`, `inst/CITATION`. `biocthis::use_bioc_description()` and
-   friends write these; see the tooling block in `AGENTS.md`.
+   with a valid `cre` email, `NEWS.md`, `inst/CITATION`. The `biocthis::use_bioc_*()` chain
+   writes these; see the tooling block in `AGENTS.md`. One trap for a conversion:
+   `use_bioc_description()` replaces DESCRIPTION rather than merging into it, and declines
+   silently when it cannot ask - so on an existing package add `biocViews` by hand.
 6. **Reuse audit** - does the package define its own container where `SummarizedExperiment`,
    `GRanges`, or another core class would do? This is the single most common substantive review
    request and the most expensive to retrofit. See `development/methods-classes.md` (ch 5).

@@ -78,6 +78,13 @@ biocthis::use_bioc_citation()
 biocthis::use_bioc_github_action()
 ```
 
+`use_bioc_description()` writes a **fresh** DESCRIPTION; it does not merge into an existing one.
+Internally it calls `usethis::use_description()`, which calls `write_over()`, which asks before
+replacing an existing file - and in a non-interactive session it declines silently. So for a
+package that already has a DESCRIPTION, this call very often does nothing at all and you get no
+error. Add `biocViews` by hand instead, or approve the overwrite knowing it discards the
+DESCRIPTION you have. Everything else in the chain appends and is safe on an existing package.
+
 Install with:
 
 ```r
