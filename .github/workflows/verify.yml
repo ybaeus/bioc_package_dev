@@ -178,7 +178,8 @@ jobs:
           echo "::error::BiocCheck artifacts: ${found:-none}"
           log=$(find "$RUNNER_TEMP" "$GITHUB_WORKSPACE" -name '00BiocCheck.log' 2>/dev/null | head -1)
           if [ -n "$log" ]; then
-            echo "::error::BiocCheck log tail: $(tail -c 2000 "$log" | tr '\n' ' ')"
+            echo "::error::BiocCheck head: $(head -c 2200 "$log" | tr '\n' ' ')"
+            echo "::error::BiocCheck error lines: $(grep -in -A3 'error' "$log" | head -c 1800 | tr '\n' ' ')"
           fi
 
   evals:
